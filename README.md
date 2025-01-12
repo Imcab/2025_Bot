@@ -52,3 +52,5 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 - Comentarios en diferentes funciones
 - Se removieron importaciones innecesarias
 - Cambiar el método de getPeriod() en robotState por uno fijo "0.02" (es el mismo valor)
+
+#### Imad - 12/01/2025
