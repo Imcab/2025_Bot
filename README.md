@@ -40,15 +40,15 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 ### 🔵 **OTHER FEATURES**
 
--Se cambió el nombre de alinear el swerve con el apriltag de "getinRange()" a "centerWithApriltag()"
--Creacion de [QoLutil](/src/main/java/frc/robot/lib/util/QoLutil.java), que cuenta con un método para sacar porcentaje, elevar al cuadrado e invertir un valor con una condición
--Eliminación de la notificación de la conexion de la navx
--Cambiar el orden de los métodos del swerve
--Eliminación de métodos inecesarios 
--Eliminacion de la constante "MAX_SPEED_RPS" en [SwerveConfig](/src/main/java/frc/robot/lib/SwerveConfig.java) ya que era la misma que "MAX_LINEAR_SPEED"
--Mostrar el timepo de la partida en la dashboard
--Cambiar la velocidad de rastreo máxima en [SwerveConfig](/src/main/java/frc/robot/lib/SwerveConfig.java) de "3" mps a el 75% de la máxima velocidad "5.79" mps
--Se cambió el nombre del comando que frena el swerve de "formX" a "brake" (que significa frenar) 
--Comentarios en diferentes funciones
--Se removieron importaciones innecesarias
--Cambiar el método de getPeriod() en robotState por uno fijo "0.02" (es el mismo valor)
+- Se cambió el nombre de alinear el swerve con el apriltag de "getinRange()" a "centerWithApriltag()"
+- Creacion de [QoLutil](/src/main/java/frc/robot/lib/util/QoLutil.java), que cuenta con un método para sacar porcentaje, elevar al cuadrado e invertir un valor con una condición
+- Eliminación de la notificación de la conexion de la navx
+- Cambiar el orden de los métodos del swerve
+- Eliminación de métodos inecesarios 
+- Eliminacion de la constante "MAX_SPEED_RPS" en [SwerveConfig](/src/main/java/frc/robot/lib/SwerveConfig.java) ya que era la misma que "MAX_LINEAR_SPEED"
+- Mostrar el timepo de la partida en la dashboard
+- Cambiar la velocidad de rastreo máxima en [SwerveConfig](/src/main/java/frc/robot/lib/SwerveConfig.java) de "3" mps a el 75% de la máxima velocidad "5.79" mps
+- Se cambió el nombre del comando que frena el swerve de "formX" a "brake" (que significa frenar) 
+- Comentarios en diferentes funciones
+- Se removieron importaciones innecesarias
+- Cambiar el método de getPeriod() en robotState por uno fijo "0.02" (es el mismo valor)
