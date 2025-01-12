@@ -29,7 +29,7 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 ## 🛠️ **GENERAL CHANGES**
 
--Se crearon nuevos métodos para manejar el swerve en [DriveTrain](/src/main/java/frc/robot/Subsystems/DriveTrain.java), moveInX y moveInY haciendo que se mueva en cierta cantidad de metros en la coordenada X o Y
+- Se crearon nuevos métodos para manejar el swerve en [DriveTrain](/src/main/java/frc/robot/Subsystems/DriveTrain.java), moveInX y moveInY haciendo que se mueva en cierta cantidad de metros en la coordenada X o Y
 -Remover el método del voltaje de la clase [SwerveEncoder](/src/main/java/frc/robot/lib/util/SwerveEncoder.java)
 -Mostrar el swerve en la dashboard (como si se viera en advantageScope)
 -Pulir el código del swerve
