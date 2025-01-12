@@ -8,6 +8,9 @@ public class Constants {
 
     public static final Gains driveGains = new Gains(0.05, 0, 0, 0.1, 0.13);
     public static final Gains turnGains = new Gains(6.8, 0, 0);
+
+    public static final double VisionRangekp = 0.0;
+    public static final double VisionAimkp = 0.0;
     
     public static final class frontLeft{
 
@@ -19,7 +22,6 @@ public class Constants {
         public static final boolean DrivemotorReversed = false;
         public static final boolean TurnmotorReversed = true;
         
-
     }
 
     public static final class frontRight{

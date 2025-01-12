@@ -8,10 +8,16 @@ public class Alerts {
 
     //Storage for all the notifications through elastic dashboard
 
+    public static final double mHeight = 2.5; //Notification height displayed on Elastic
+
+    public static final double defaulWith = 350;
+
+    public static final double extendedWith = 450;
+
     public static Notification lowBattery =
-         new Notification(NotificationLevel.ERROR, "Minimum Battery detected!", "Change the battery NOW");
+         new Notification(NotificationLevel.ERROR, "Low Battery detected!", "Change the battery NOW", 0,0);
     public static Notification mediumBattery =
-         new Notification(NotificationLevel.WARNING, "Low Battery detected!", "Change the battery");
+         new Notification(NotificationLevel.WARNING, "Approaching low battery!", "Change the battery");
         
     public static Notification navX_Reset =
          new Notification(NotificationLevel.INFO, "A navX reset has ocurred", "the robot's heading has been changed");
@@ -27,9 +33,7 @@ public class Alerts {
         
     public static Notification encoderShuts =
          new Notification(NotificationLevel.WARNING, "Disconnecting a swerve encoder...", "Now using internal encoder");
-    public static Notification holdingAngle =
-         new Notification(NotificationLevel.INFO, "Locking Swerve to 0 degrees", "Release the button to unlock");
-        
+
     private Alerts(){}
     
     public static void sendCustom(Notification notification){
@@ -56,9 +60,6 @@ public class Alerts {
     }
     public static void sendEncoderShuts(){
         Elastic.sendNotification(encoderShuts);
-    }
-    public static void sendHold(){
-        Elastic.sendNotification(holdingAngle);
     }
     public static void sendMediumBattery(){
         Elastic.sendNotification(mediumBattery);

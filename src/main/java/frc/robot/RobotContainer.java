@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -33,11 +32,11 @@ public class RobotContainer {
 
     //------------------------------------------- DRIVER 1 -------------------------------------------
     controller.start().whileTrue(DriveCommands.resetHeading(swerve).finallyDo(()-> Alerts.sendNavxReset())); //resets heading
-    controller.back().whileTrue(DriveCommands.formX(swerve));
+    controller.rightBumper().whileTrue(DriveCommands.brake(swerve)); //Stops the swerve in an "X" pattern position
 
     swerve.setDefaultCommand(DriveCommands.joystickDrive(swerve, ()-> controller.getLeftY(),  ()-> controller.getLeftX(),  ()-> -controller.getRightX()));
 
-    //fija el swerve a 0 grados
+    //start alignment with limelight
     controller.b().whileTrue(DriveCommands.getInRange(swerve, ()-> controller.getLeftX()));
 
     //------------------------------------------- DRIVER 1 -------------------------------------------

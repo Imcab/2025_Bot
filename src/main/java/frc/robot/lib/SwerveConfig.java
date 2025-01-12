@@ -5,15 +5,19 @@ import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import frc.robot.lib.util.QoLUtil;
 
 public class SwerveConfig{
 
+    public class gyro{
+        public static final double angularSpeedTrigger = Units.degreesToRadians(720); //720 degxsec
+        public static final boolean shouldInvert = false;
+    }
     public class speeds {
-        public static final double MAX_SPEED_MPS = 5.7912;
-        public static final double MAX_LINEAR_SPEED = Units.feetToMeters(19.0);
+        public static final double MAX_LINEAR_SPEED = Units.feetToMeters(19.0); //5.7912
         public static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / measures.DRIVE_BASE_RADIUS;
-        public static final double LIMMaxSpeed = 3.0; // 3 meters per second
-        public static final double LIMMaxAngularSpeed = Math.PI;
+        public static final double TrackMaxSpeed = QoLUtil.percentageOf(75, MAX_LINEAR_SPEED);
+        public static final double TrackMaxAngularSpeed = Math.PI;
     }
     
     public class measures{
@@ -40,6 +44,12 @@ public class SwerveConfig{
         
     }
 
+    public class currentLimiting{
+        public static final int driveCurrentLimit = 40;
+        public static final int turnCurrentLimit = 20;
+        
+    }
+
     public class reductions{
         public static final double DriveReduction = 5.36;
         public static final double TurnReduction = 18.75;  
@@ -51,7 +61,7 @@ public class SwerveConfig{
           measures.robotMOI,
           new ModuleConfig(
               measures.WHEELRADIUS,
-              speeds.MAX_SPEED_MPS,
+              speeds.MAX_LINEAR_SPEED,
               measures.wheelCOF,
               DCMotor.getNEO(1).withReduction(reductions.DriveReduction),
               30,

@@ -15,6 +15,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,15 +25,14 @@ import frc.robot.RobotState;
 import frc.robot.lib.Alerts;
 import frc.robot.lib.SwerveConfig;
 import frc.robot.lib.util.Actions;
+import frc.robot.lib.util.QoLUtil;
 import frc.robot.lib.vision.LimelightHelpers;
-import frc.robot.lib.vision.vision.limelight;
+
 
 public class DriveTrain extends SubsystemBase{
 
     private final AHRS navX =  new AHRS(NavXComType.kMXP_SPI);
 
-    //private final limelight lim;
-    
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(SwerveConfig.measures.getTranslations());
     private Rotation2d rawGyroRotation = new Rotation2d();
     private SwerveModulePosition[] lastModulePositions = // For delta tracking
@@ -49,8 +50,7 @@ public class DriveTrain extends SubsystemBase{
     public DriveTrain(){
 
         AutoBuilder.configure(this::getPose, this::setPose, this::getChassisSpeeds , this::runVelocity,  new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)), SwerveConfig.ppConfig, () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red, this);
-        
-
+      
         modules[0] = new ModuleSpark(0);
         modules[1] = new ModuleSpark(1);
         modules[2] = new ModuleSpark(2);
@@ -68,13 +68,36 @@ public class DriveTrain extends SubsystemBase{
 
     public void periodic(){
 
+      //for test, remove if success:
+      SmartDashboard.putNumber("Robot match time", RobotState.getMatchTime());
+
+    //Display swerve widget in Elastic:
+
+    SmartDashboard.putData("Swerve Drive", new Sendable() {
+    @Override
+    public void initSendable(SendableBuilder builder) {
+    builder.setSmartDashboardType("SwerveDrive");
+
+    builder.addDoubleProperty("Front Left Angle", () -> modules[0].getAngle().getRadians(), null);
+    builder.addDoubleProperty("Front Left Velocity", () -> modules[0].getDriveVelocityMetersxSec(), null);
+
+    builder.addDoubleProperty("Front Right Angle", () -> modules[1].getAngle().getRadians(), null);
+    builder.addDoubleProperty("Front Right Velocity", () -> modules[1].getDriveVelocityMetersxSec(), null);
+
+    builder.addDoubleProperty("Back Left Angle", () -> modules[2].getAngle().getRadians(), null);
+    builder.addDoubleProperty("Back Left Velocity", () -> modules[2].getDriveVelocityMetersxSec(), null);
+
+    builder.addDoubleProperty("Back Right Angle", () -> modules[3].getAngle().getRadians(), null);
+    builder.addDoubleProperty("Back Right Velocity", () -> modules[3].getDriveVelocityMetersxSec(), null);
+
+    builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+    }
+    });
+
+
       //State and notification actions:
-
-      SmartDashboard.putNumber("Period", RobotState.getPeriod());
-      
-      SmartDashboard.putBoolean("target", LimelightHelpers.getTV("limelight-buluk"));
-
-      RobotState.setAngularVelocity(Units.radiansToDegrees(getYawVelicityRadPerSec()));
+  
+      RobotState.setAngularVelocity(getYawVelicityRadPerSec());
 
       Actions.runOnce(()-> RobotState.isAngularVelAboveLimits(), ()-> Alerts.sendFastSpeed());
       
@@ -113,37 +136,22 @@ public class DriveTrain extends SubsystemBase{
     }
 
     public double getAngle(){
-      return Math.IEEEremainder(navX.getAngle(), 360);
+      return QoLUtil.inverse(Math.IEEEremainder(navX.getAngle(), 360), SwerveConfig.gyro.shouldInvert);
     }
+
+    
 
     public Rotation2d getnavXRotation(){
       return Rotation2d.fromDegrees(getAngle());
     }
 
+    public void resetHeading(){
+      navX.reset();
+    }
   
-  public void runVelocity(ChassisSpeeds speeds) {
-    // Calculate module setpoints
-    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
-    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SwerveConfig.speeds.MAX_LINEAR_SPEED);
-
-    for (int i = 0; i < 4; i++) {
-        modules[i].runSetpoint(setpointStates[i]);
+    public double getYawVelicityRadPerSec(){
+      return Units.degreesToRadians(-navX.getRawGyroZ());
     }
-  }
-
-  public void stop() {
-    runVelocity(new ChassisSpeeds());
-  }
-
-  public void stopWithX() {
-    Rotation2d[] headings = new Rotation2d[4];
-    for (int i = 0; i < 4; i++) {
-      headings[i] = SwerveConfig.measures.getTranslations()[i].getAngle();
-    }
-    kinematics.resetHeadings(headings);
-    stop();
-  }
 
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
@@ -159,6 +167,13 @@ public class DriveTrain extends SubsystemBase{
       states[i] = modules[i].getPosition();
     }
     return states;
+  }
+
+  //Sends all modules to a set of Desired Sates
+  public void toSetpoint(SwerveModuleState[] setpoint){
+    for (int i = 0; i < 4; i++) {
+      modules[i].runSetpoint(setpoint[i]);
+    }
   }
 
   public Pose2d getPose() {
@@ -185,26 +200,6 @@ public class DriveTrain extends SubsystemBase{
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
-  /** Returns the maximum linear speed in meters per sec. */
-  public double getMaxLinearSpeedMetersPerSec() {
-    return SwerveConfig.speeds.MAX_LINEAR_SPEED;
-  }
-
-  /** Returns the maximum angular speed in radians per sec. */
-  public double getMaxAngularSpeedRadPerSec() {
-    return SwerveConfig.speeds.MAX_ANGULAR_SPEED;
-  }
-
-  public void resetHeading(){
-
-    navX.reset();
-    
-  }
-
-  public double getYawVelicityRadPerSec(){
-    return Units.degreesToRadians(-navX.getRawGyroZ());
-  }
-
   // simple proportional turning control with Limelight.
   // "proportional control" is a control algorithm in which the output is proportional to the error.
   // in this case, we are going to return an angular velocity that is proportional to the 
@@ -223,7 +218,7 @@ public class DriveTrain extends SubsystemBase{
     double targetingAngularVelocity = LimelightHelpers.getTX("limelight-buluk") * kP;
 
     // convert to radians per second for our drive method
-    targetingAngularVelocity *= SwerveConfig.speeds.LIMMaxAngularSpeed;
+    targetingAngularVelocity *= SwerveConfig.speeds.TrackMaxAngularSpeed;
 
     //invert since tx is positive when the target is to the right of the crosshair
     targetingAngularVelocity *= 1.0;
@@ -238,23 +233,84 @@ public class DriveTrain extends SubsystemBase{
   {    
     double kP = .04;
     double targetingForwardSpeed = LimelightHelpers.getTY("limelight-buluk") * kP;
-    targetingForwardSpeed *= SwerveConfig.speeds.LIMMaxSpeed;
+    targetingForwardSpeed *= SwerveConfig.speeds.TrackMaxSpeed;
     targetingForwardSpeed *= -1.0;
     return targetingForwardSpeed;
 
   }
 
-  public void driveVision(double x, double y, double rot, double period){
-    var State = kinematics.toSwerveModuleStates(ChassisSpeeds.discretize(new ChassisSpeeds(x,y,rot), period));
+  //run the swerve to an specific chassisSpeeds
+  public void runVelocity(ChassisSpeeds speeds) {
+    // Calculate module setpoints
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, RobotState.getPeriod());
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, SwerveConfig.speeds.MAX_LINEAR_SPEED);
 
-    SwerveDriveKinematics.desaturateWheelSpeeds(State, SwerveConfig.speeds.LIMMaxSpeed);
-
-    modules[0].setSpeed(State[0]);
-    modules[1].setSpeed(State[1]);
-    modules[2].setSpeed(State[2]);
-    modules[3].setSpeed(State[3]);
+    toSetpoint(setpointStates);
   }
 
+  //Centers the swerve to the aprilTag
+  public void centerWithApriltag(double y){
+    var State = kinematics.toSwerveModuleStates(
+      ChassisSpeeds.discretize(
+        new ChassisSpeeds(
+          limelight_range_proportional(),
+          y,
+          limelight_aim_proportional()),
+           RobotState.getPeriod()));
 
+    SwerveDriveKinematics.desaturateWheelSpeeds(State, SwerveConfig.speeds.TrackMaxSpeed);
+
+    toSetpoint(State);
+
+  }
+
+  //Moves the swerve in the X coordinate
+  public void moveInX(double meters, boolean invertDirection){
+      var State = kinematics.toSwerveModuleStates(
+        ChassisSpeeds.discretize(new ChassisSpeeds(0,QoLUtil.inverse(meters, invertDirection),0), RobotState.getPeriod())
+      );
+
+    SwerveDriveKinematics.desaturateWheelSpeeds(State, SwerveConfig.speeds.MAX_LINEAR_SPEED);
+
+    toSetpoint(State);
+
+  }
+
+  //Moves the swerve in the Y coordinate
+  public void moveInY(double meters, boolean invertDirection){
+
+    var State = kinematics.toSwerveModuleStates(
+        ChassisSpeeds.discretize(new ChassisSpeeds(QoLUtil.inverse(meters, invertDirection),0,0), RobotState.getPeriod())
+      );
+
+    SwerveDriveKinematics.desaturateWheelSpeeds(State, SwerveConfig.speeds.MAX_LINEAR_SPEED);
+
+    toSetpoint(State);
+
+  }
+
+  public void stop() {
+    runVelocity(new ChassisSpeeds());
+  }
+
+  public void stopWithX() {
+    Rotation2d[] headings = new Rotation2d[4];
+    for (int i = 0; i < 4; i++) {
+      headings[i] = SwerveConfig.measures.getTranslations()[i].getAngle();
+    }
+    kinematics.resetHeadings(headings);
+    stop();
+  }
+
+  /** Returns the maximum linear speed in meters per sec. */
+  public double getMaxLinearSpeedMetersPerSec() {
+    return SwerveConfig.speeds.MAX_LINEAR_SPEED;
+  }
+
+  /** Returns the maximum angular speed in radians per sec. */
+  public double getMaxAngularSpeedRadPerSec() {
+    return SwerveConfig.speeds.MAX_ANGULAR_SPEED;
+  }
   
 }

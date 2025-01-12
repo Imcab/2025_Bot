@@ -23,6 +23,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.lib.util.HPPMathLib;
+import frc.robot.lib.util.QoLUtil;
 
 public class vision {
 
@@ -231,7 +232,7 @@ public class vision {
                 if (aprilCount == 1 && Distance > 4)
                     estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double. MAX_VALUE, Double.MAX_VALUE);
                 
-                else estStdDevs = estStdDevs.times(1 + (HPPMathLib.Square(Distance)) / 30); // !
+                else estStdDevs = estStdDevs.times(1 + (QoLUtil.Square(Distance)) / 30); // !
                 
                 curStdDevs = estStdDevs;
 

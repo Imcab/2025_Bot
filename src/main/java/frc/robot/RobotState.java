@@ -1,29 +1,47 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
+import frc.robot.lib.SwerveConfig;
 
 public class RobotState{
 
+    //possible states from battery
+    public enum batteryCharge{
+        mLOW, mMEDIUM, mHIGH
+    }
+
+    //init default values
     public static double batteryVoltsTrigger = 7.5;
     public static double batteryVoltsTriggerMed = 10;
     public static double gyroRate;
     public static boolean isEndgame = false;
-    public static boolean below12VoltsInit = false;
     public static double mPeriod = 0.0;
+    public static boolean mConnection = false;
+    public static batteryCharge mCharge;
 
-    public static boolean isLowBattery(){
-        return RobotController.getBatteryVoltage() <= batteryVoltsTrigger;
+    //mutators and access methods
+
+    public static batteryCharge batteryState(){
+        if (RobotController.getBatteryVoltage() < batteryVoltsTrigger) {
+            mCharge = batteryCharge.mLOW;
+        }else 
+        if (RobotController.getBatteryVoltage() < batteryVoltsTriggerMed && RobotController.getBatteryVoltage() > batteryVoltsTrigger) {
+            mCharge = batteryCharge.mMEDIUM;
+        }else 
+        if (RobotController.getBatteryVoltage() > batteryVoltsTriggerMed) {
+            mCharge = batteryCharge.mHIGH;
+        }
+        return mCharge;
     }
 
-    public static void setPeriod(double p){
-        mPeriod = p;
-    }
-
+    //Default periodic's function update rate 
     public static double getPeriod(){
-        return mPeriod;
+        return 0.02;
     }
-    public static boolean isMediumCharge(){
-        return RobotController.getBatteryVoltage() <= batteryVoltsTriggerMed;
+
+    public static double getMatchTime(){
+        return DriverStation.getMatchTime();
     }
 
     public void endGameStart(boolean end){
@@ -33,14 +51,6 @@ public class RobotState{
     public static boolean isEndgame(){
         return isEndgame;
     }
-
-    public static void startwithLowMode(boolean toggle){
-        below12VoltsInit =toggle;
-    }
-    public static boolean isLowModeSetted(){
-        return below12VoltsInit;
-    }
-
     public static void setAngularVelocity(double Rate){
         gyroRate = Rate;
     }
@@ -50,6 +60,14 @@ public class RobotState{
     }
 
     public static boolean isAngularVelAboveLimits(){
-        return gyroRate > 720;
+        return gyroRate > SwerveConfig.gyro.angularSpeedTrigger;
+    }
+
+    public static boolean getGyroConnection(){
+        return mConnection;
+    }
+
+    public static void setGyroConnection(boolean value){
+        mConnection = value;
     }
 }

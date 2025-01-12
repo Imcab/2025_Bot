@@ -4,9 +4,12 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.RobotState.batteryCharge;
 import frc.robot.lib.Alerts;
 import frc.robot.lib.util.Actions;
 
@@ -19,26 +22,19 @@ public class Robot extends TimedRobot {
   public Robot() {
     m_robotContainer = new RobotContainer();
 
-    //Actions.runOnce(()-> RobotState(), ()-> Alerts.sendNavxConnected());
-    //Actions.runOnce(()-> !navX.isConnected(), ()-> Alerts.sendNavxDisconnected());
+    Actions.runOnce(()-> !RobotState.getGyroConnection(), ()-> Alerts.sendNavxDisconnected());
 
-    Actions.runOnce(()-> RobotState.isLowBattery(), ()-> Alerts.sendLowBattery()); //Checa si la bateria no ha sido cambiada
+    Actions.runOnce(()-> RobotState.batteryState() == batteryCharge.mLOW, ()-> Alerts.sendLowBattery()); //Checa si la bateria no ha sido cambiada
 
-    Actions.runOnce(()-> RobotState.isMediumCharge(), ()-> Alerts.sendMediumBattery()); //Empieza el juego con poca pila
-    //Activa ahorro de energia en caso de iniciar con poca bateria 
-    if (RobotState.isMediumCharge()) {
-      RobotState.startwithLowMode(true);
-    }
+    Actions.runOnce(()-> RobotState.batteryState() == batteryCharge.mMEDIUM, ()-> Alerts.sendMediumBattery()); //Empieza el juego con poca pila
     
-    RobotState.startwithLowMode(false);
-
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    RobotState.setPeriod(getPeriod());
+    SmartDashboard.putNumber("Match time", DriverStation.getMatchTime());
   }
 
   @Override

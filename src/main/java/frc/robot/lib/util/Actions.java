@@ -1,16 +1,14 @@
 package frc.robot.lib.util;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 
 import edu.wpi.first.math.filter.Debouncer;
 
 public class Actions{
-    private static boolean flag = false;
-
+   
     public static void runOnce(BooleanSupplier condition, Runnable action){
+
+        boolean flag = false;
 
         if (condition.getAsBoolean() && !flag) {
             action.run();

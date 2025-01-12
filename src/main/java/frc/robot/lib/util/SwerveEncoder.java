@@ -188,21 +188,4 @@ public class SwerveEncoder{
     public boolean isConnected(){
         return !isDisconnected();
     }
-
-    /**
-     * Obtiene el voltaje 
-     * @return voltaje
-     */
-    public double getVoltage(){
-        return encoder.getVoltage();
-    }
-    /**
-     * Obtiene el AverageVoltage
-     * @return AverageVoltage
-     */
-    public double getAverageVoltage(){
-        return encoder.getAverageVoltage();
-    }
-
-
 }

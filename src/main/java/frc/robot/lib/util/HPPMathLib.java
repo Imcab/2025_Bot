@@ -54,10 +54,7 @@ public class HPPMathLib {
         return Units.radiansToDegrees(Math.atan2(y, x));
 
     }
-    //:v
-    public static double Square(double x){
-        return x * x;
-    }
+    
     
 }
 

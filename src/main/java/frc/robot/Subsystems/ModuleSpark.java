@@ -114,7 +114,7 @@ public class ModuleSpark{
         config_drive
         .inverted(isDriveMotorInverted)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(30)
+        .smartCurrentLimit(SwerveConfig.currentLimiting.driveCurrentLimit)
         .voltageCompensation(12);
   
         config_drive.encoder
@@ -129,7 +129,7 @@ public class ModuleSpark{
         config_turn
         .inverted(isTurnMotorInverted)
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(30)
+        .smartCurrentLimit(SwerveConfig.currentLimiting.turnCurrentLimit)
         .voltageCompensation(12);
   
         config_drive.encoder
@@ -152,10 +152,6 @@ public class ModuleSpark{
 
     public int getChannel(){
       return module_Encoder.getPort();
-    }
-
-    public double getVoltage(){
-      return module_Encoder.getVoltage();
     }
 
     public void periodic(){
@@ -183,17 +179,17 @@ public class ModuleSpark{
 
     }
 
+    public double getInternalEncoderPosition(){
+      return enc_turn.getPosition() / SwerveConfig.reductions.TurnReduction;
+    }
+
     public Rotation2d getAngle(){
 
       if (!isConnected()) {
-        return new Rotation2d(enc_turn.getPosition() / SwerveConfig.reductions.TurnReduction);
+        return new Rotation2d(getInternalEncoderPosition());
       }
 
       return module_Encoder.getRotation2D();
-    }
-
-    public double getInternalEncoderPosition(){
-      return enc_turn.getPosition() / SwerveConfig.reductions.TurnReduction;
     }
 
     public SwerveModuleState runSetpoint(SwerveModuleState state) {
