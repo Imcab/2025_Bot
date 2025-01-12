@@ -30,9 +30,9 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 ## 🛠️ **GENERAL CHANGES**
 
 - Se crearon nuevos métodos para manejar el swerve en [DriveTrain](/src/main/java/frc/robot/Subsystems/DriveTrain.java), moveInX y moveInY haciendo que se mueva en cierta cantidad de metros en la coordenada X o Y
--Remover el método del voltaje de la clase [SwerveEncoder](/src/main/java/frc/robot/lib/util/SwerveEncoder.java)
--Mostrar el swerve en la dashboard (como si se viera en advantageScope)
--Pulir el código del swerve
+- Remover el método del voltaje de la clase [SwerveEncoder](/src/main/java/frc/robot/lib/util/SwerveEncoder.java)
+- Mostrar el swerve en la dashboard (como si se viera en advantageScope)
+- Pulir el código del swerve
 - Se quitaron y añadieron métodos a [RobotState](/src/main/java/frc/robot/RobotState.java)
 - Creación del método "toSetpoint" en [DriveTrain](/src/main/java/frc/robot/Subsystems/DriveTrain.java) que manda todos los modulos al setpoint solicitado. esto para ahorrar lineas de código
 - Se añadieron mas campos a [SwerveConfig](/src/main/java/frc/robot/lib/SwerveConfig.java), uno donde se guarda el límite de corriente y otro para guardar si se debe de invertir el gyroscopio
@@ -54,3 +54,5 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 - Cambiar el método de getPeriod() en robotState por uno fijo "0.02" (es el mismo valor)
 
 #### Imad - 12/01/2025
+
+#### gg papa
