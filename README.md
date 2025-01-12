@@ -2,6 +2,24 @@
 
 ![heading](/images/heading.png)
 
+Bienvenidos al código de Buluk3472 de la temporada 2025, este código se caracteriza por manejo de swerve en diferentes formas, vision integrada y uso de pathplanner.
+Lo mas relevante de nuestro código 📂⬇️
+
+[**lib:**](/src/main/java/frc/robot/lib) una amplia variedad de archivos de utilidad desde propias clases de encoders para el swerve, vision, gestor de alertas, constantes de pid hasta configuraciones para el swerve
+
+
+[**RobotState**](/src/main/java/frc/robot/RobotState.java) clase de métodos estáticos donde se manejan y reportan todos los estados del robot desde la bateria, tiempo restante del juego hasta si el robot esta yendo a una velocidad muy alta o si el gyroscopio esta conectado
+
+
+[**SuperStructure**](/src/main/java/frc/robot/Subsystems/Superstructure) clase de una superestructura que trackea los objetivos deseados del robot y hace request para operar todos los mecanismos de manera precisa y en conjunto (una superestructura es básicamente todo aquel mecanismo que se encuentre arriba del chassis)
+
+
+Encuentra nuestros subsistemas [aqui](/src/main/java/frc/robot/Subsystems).
+
+Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
+
+🔴ChangeLog abajo:
+
 # ✅COMMIT #15  - MAJOR FIX CHANGES
 
 ## ⚠️**IMPORTANT CHANGES**
