@@ -11,7 +11,7 @@ Lo mas relevante de nuestro código 📂⬇️
 [**RobotState**](/src/main/java/frc/robot/RobotState.java) clase de métodos estáticos donde se manejan y reportan todos los estados del robot desde la bateria, tiempo restante del juego hasta si el robot esta yendo a una velocidad muy alta o si el gyroscopio esta conectado
 
 
-[**SuperStructure**](/src/main/java/frc/robot/Subsystems/Superstructure) clase de una superestructura que trackea los objetivos deseados del robot y hace request para operar todos los mecanismos de manera precisa y en conjunto (una superestructura es básicamente todo aquel mecanismo que se encuentre arriba del chassis)
+[**SuperStructure**](/src/main/java/frc/robot/Subsystems/Superstructure.java) clase de una superestructura que trackea los objetivos deseados del robot y hace request para operar todos los mecanismos de manera precisa y en conjunto (una superestructura es básicamente todo aquel mecanismo que se encuentre arriba del chassis)
 
 
 Encuentra nuestros subsistemas [aqui](/src/main/java/frc/robot/Subsystems).
