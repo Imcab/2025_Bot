@@ -28,7 +28,6 @@ import frc.robot.lib.util.Actions;
 import frc.robot.lib.util.QoLUtil;
 import frc.robot.lib.vision.LimelightHelpers;
 
-
 public class DriveTrain extends SubsystemBase{
 
     private final AHRS navX =  new AHRS(NavXComType.kMXP_SPI);
