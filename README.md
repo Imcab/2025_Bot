@@ -1,6 +1,6 @@
 # 🪼🦀WELCOME TO 2025 FRC: REEFSCAPE 3472 CODE
 
-[](/images/heading.png)
+![heading](/images/heading.png)
 
 # ✅COMMIT #15  - MAJOR FIX CHANGES
 
