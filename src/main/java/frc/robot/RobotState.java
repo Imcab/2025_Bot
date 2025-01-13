@@ -19,6 +19,7 @@ public class RobotState{
     public static double mPeriod = 0.0;
     public static boolean mConnection = false;
     public static batteryCharge mCharge;
+    public static final String NetworkTables_AlertGroupID = "SystemState";
 
     //mutators and access methods
 
@@ -70,4 +71,5 @@ public class RobotState{
     public static void setGyroConnection(boolean value){
         mConnection = value;
     }
+
 }

@@ -20,6 +20,29 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 🔴ChangeLog abajo:
 
+# ✅COMMIT #16  - DASHBOARD and Swerve Overview
+
+## ⚠️**IMPORTANT CHANGES**
+
+- Se agregó un tipo de manejo lento para el swerve
+
+## 🛠️ **GENERAL CHANGES**
+
+- Agregar el método de desconectar los encoders manualmente en los módulos del swerve
+- Mostrar la posición del robot y el campo en la dashboard
+- Agregar la implementación de toggles switches para desactivar los encoders desde elastic
+- Corregir el método de QoLUtil "percentageOf()", estaba invertida la variable
+
+### 🔵 **OTHER FEATURES**
+
+- Eliminación de alertas inecesarias 
+- Creación de un ID único para las alertas mediante las NT
+- Eliminar importaciones inecesarias
+- Cambiar botones para el comando de frenar el swerve
+- Cmabió el método de isConnected() del SwerveEncoder a isDisconnected()
+
+#### Imad - 13/01/2025
+
 # ✅COMMIT #15  - MAJOR FIX CHANGES
 
 ## ⚠️**IMPORTANT CHANGES**
@@ -55,4 +78,3 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 #### Imad - 12/01/2025
 
-#### gg papa

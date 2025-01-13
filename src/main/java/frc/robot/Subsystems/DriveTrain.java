@@ -17,8 +17,11 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
@@ -30,7 +33,21 @@ import frc.robot.lib.vision.LimelightHelpers;
 
 public class DriveTrain extends SubsystemBase{
 
+    private final Field2d displayField = new Field2d(); //create the field for being displayed on elastic
+
     private final AHRS navX =  new AHRS(NavXComType.kMXP_SPI);
+
+    private final Alert gyroDisconnection = new Alert(RobotState.NetworkTables_AlertGroupID,
+     "NAVX: DISCONNECTED",
+      AlertType.kError);
+    private final Alert overAngularLimit = new Alert(RobotState.NetworkTables_AlertGroupID,
+     "ODOMETRY: ignoring vision updates due to high angular speed",
+      AlertType.kWarning);
+
+    private final Alert FLAlert = new Alert(RobotState.NetworkTables_AlertGroupID, "FL: Encoder disconnected", AlertType.kInfo);
+    private final Alert FRAlert = new Alert(RobotState.NetworkTables_AlertGroupID, "FR: Encoder disconnected", AlertType.kInfo);
+    private final Alert BLAlert = new Alert(RobotState.NetworkTables_AlertGroupID, "BL: Encoder disconnected", AlertType.kInfo);
+    private final Alert BRAlert = new Alert(RobotState.NetworkTables_AlertGroupID, "BR: Encoder disconnected", AlertType.kInfo);
 
     private SwerveDriveKinematics kinematics = new SwerveDriveKinematics(SwerveConfig.measures.getTranslations());
     private Rotation2d rawGyroRotation = new Rotation2d();
@@ -47,6 +64,11 @@ public class DriveTrain extends SubsystemBase{
     ModuleSpark []modules  = new ModuleSpark[4];
 
     public DriveTrain(){
+
+        //init disabler for the encoders on dashboard
+        for(var module : modules){
+          SmartDashboard.putBoolean("["+ module.getModuleName()+"]: DisableEncoder", false);
+        }      
 
         AutoBuilder.configure(this::getPose, this::setPose, this::getChassisSpeeds , this::runVelocity,  new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)), SwerveConfig.ppConfig, () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red, this);
       
@@ -67,41 +89,60 @@ public class DriveTrain extends SubsystemBase{
 
     public void periodic(){
 
+      
       //for test, remove if success:
       SmartDashboard.putNumber("Robot match time", RobotState.getMatchTime());
 
-    //Display swerve widget in Elastic:
+      //updating the field
+      displayField.setRobotPose(getPose());
 
-    SmartDashboard.putData("Swerve Drive", new Sendable() {
-    @Override
-    public void initSendable(SendableBuilder builder) {
-    builder.setSmartDashboardType("SwerveDrive");
+      //displays
+      SmartDashboard.putData(displayField);
 
-    builder.addDoubleProperty("Front Left Angle", () -> modules[0].getAngle().getRadians(), null);
-    builder.addDoubleProperty("Front Left Velocity", () -> modules[0].getDriveVelocityMetersxSec(), null);
+      //Display swerve widget in Elastic:
 
-    builder.addDoubleProperty("Front Right Angle", () -> modules[1].getAngle().getRadians(), null);
-    builder.addDoubleProperty("Front Right Velocity", () -> modules[1].getDriveVelocityMetersxSec(), null);
+      SmartDashboard.putData("Swerve Drive", new Sendable() {
+      @Override
+      public void initSendable(SendableBuilder builder) {
+      builder.setSmartDashboardType("SwerveDrive");
 
-    builder.addDoubleProperty("Back Left Angle", () -> modules[2].getAngle().getRadians(), null);
-    builder.addDoubleProperty("Back Left Velocity", () -> modules[2].getDriveVelocityMetersxSec(), null);
+      builder.addDoubleProperty("Front Left Angle", () -> modules[0].getAngle().getRadians(), null);
+      builder.addDoubleProperty("Front Left Velocity", () -> modules[0].getDriveVelocityMetersxSec(), null);
 
-    builder.addDoubleProperty("Back Right Angle", () -> modules[3].getAngle().getRadians(), null);
-    builder.addDoubleProperty("Back Right Velocity", () -> modules[3].getDriveVelocityMetersxSec(), null);
+      builder.addDoubleProperty("Front Right Angle", () -> modules[1].getAngle().getRadians(), null);
+      builder.addDoubleProperty("Front Right Velocity", () -> modules[1].getDriveVelocityMetersxSec(), null);
 
-    builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
-    }
-    });
+      builder.addDoubleProperty("Back Left Angle", () -> modules[2].getAngle().getRadians(), null);
+      builder.addDoubleProperty("Back Left Velocity", () -> modules[2].getDriveVelocityMetersxSec(), null);
+
+      builder.addDoubleProperty("Back Right Angle", () -> modules[3].getAngle().getRadians(), null);
+      builder.addDoubleProperty("Back Right Velocity", () -> modules[3].getDriveVelocityMetersxSec(), null);
+
+      builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
+      }
+      });
 
 
       //State and notification actions:
   
-      RobotState.setAngularVelocity(getYawVelicityRadPerSec());
+      RobotState.setAngularVelocity(getYawVelocityRadPerSec());
+
+      gyroDisconnection.set(getGyroConnection());
+
+      overAngularLimit.set(RobotState.isAngularVelAboveLimits());
+
+      FLAlert.set(SmartDashboard.getBoolean("["+ modules[0].getModuleName()+"]: DisableEncoder", false));
+      FRAlert.set(SmartDashboard.getBoolean("["+ modules[1].getModuleName()+"]: DisableEncoder", false));
+      BLAlert.set(SmartDashboard.getBoolean("["+ modules[2].getModuleName()+"]: DisableEncoder", false));
+      BRAlert.set(SmartDashboard.getBoolean("["+ modules[3].getModuleName()+"]: DisableEncoder", false));
 
       Actions.runOnce(()-> RobotState.isAngularVelAboveLimits(), ()-> Alerts.sendFastSpeed());
       
+      
       for (var module : modules) {
         module.periodic();
+        //Create the toggle switch
+        module.setConnection(SmartDashboard.getBoolean("["+ module.getModuleName()+"]: DisableEncoder", false));
       }
       if (DriverStation.isDisabled()) {
         for (var module : modules) {
@@ -121,7 +162,7 @@ public class DriveTrain extends SubsystemBase{
       }
 
       // Update gyro angle
-      if (navX.isConnected() == true) {
+      if (getGyroConnection() == true) {
         // Use the real gyro angle
         rawGyroRotation = getnavXRotation();
       } else {
@@ -137,9 +178,9 @@ public class DriveTrain extends SubsystemBase{
     public double getAngle(){
       return QoLUtil.inverse(Math.IEEEremainder(navX.getAngle(), 360), SwerveConfig.gyro.shouldInvert);
     }
-
-    
-
+    public boolean getGyroConnection(){
+      return navX.isConnected();
+    }
     public Rotation2d getnavXRotation(){
       return Rotation2d.fromDegrees(getAngle());
     }
@@ -148,7 +189,7 @@ public class DriveTrain extends SubsystemBase{
       navX.reset();
     }
   
-    public double getYawVelicityRadPerSec(){
+    public double getYawVelocityRadPerSec(){
       return Units.degreesToRadians(-navX.getRawGyroZ());
     }
 

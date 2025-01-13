@@ -30,21 +30,18 @@ public class RobotContainer {
 
   private void configureBindings() {
 
-    //------------------------------------------- DRIVER 1 -------------------------------------------
-    controller.start().whileTrue(DriveCommands.resetHeading(swerve).finallyDo(()-> Alerts.sendNavxReset())); //resets heading
-    controller.rightBumper().whileTrue(DriveCommands.brake(swerve)); //Stops the swerve in an "X" pattern position
-
+    //Drive modes. Normal Drive
     swerve.setDefaultCommand(DriveCommands.joystickDrive(swerve, ()-> controller.getLeftY(),  ()-> controller.getLeftX(),  ()-> -controller.getRightX()));
+    //Drive modes. Slowed Drive
+    controller.leftBumper().whileTrue(DriveCommands.joystickDrive(swerve, ()-> controller.getLeftY() * 0.5,  ()-> controller.getLeftX() * 0.5,  ()-> -controller.getRightX() * 0.5));
+
+    controller.start().whileTrue(DriveCommands.resetHeading(swerve).finallyDo(()-> Alerts.sendNavxReset())); //resets heading
+    controller.x().whileTrue(DriveCommands.brake(swerve)); //Stops the swerve in an "X" pattern position
 
     //start alignment with limelight
     controller.b().whileTrue(DriveCommands.getInRange(swerve, ()-> controller.getLeftX()));
 
-    //------------------------------------------- DRIVER 1 -------------------------------------------
 
-
-    //------------------------------------------- DRIVER 2 ------------------------------------------- 
-
-    //------------------------------------------- DRIVER 2 ------------------------------------------- 
 
 
   }

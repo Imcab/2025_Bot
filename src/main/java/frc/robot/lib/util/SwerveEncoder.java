@@ -20,6 +20,7 @@ public class SwerveEncoder{
     private AnalogInput encoder;
     private double offset;
     private module mod;
+    private boolean mValue;
 
     /**
      * Crea un encoder del swerve
@@ -31,6 +32,7 @@ public class SwerveEncoder{
         this.encoder = new AnalogInput(Port);
         this.offset = offset;
         this.mod = mod;
+        this.mValue = false;
     }
     /**
      * Crea un encoder del swerve
@@ -41,6 +43,7 @@ public class SwerveEncoder{
         this.encoder = new AnalogInput(Port);
         this.offset = 0;
         this.mod = mod;
+        this.mValue = false;
     }
     /**
      * Crea un encoder del swerve
@@ -51,6 +54,7 @@ public class SwerveEncoder{
         this.encoder = new AnalogInput(Port);
         this.offset = offset;
         this.mod = module.NONE;
+        this.mValue = false;
     }
     /**
      * Crea un encoder del swerve
@@ -60,6 +64,7 @@ public class SwerveEncoder{
         this.encoder = new AnalogInput(Port);
         this.offset = 0;
         this.mod = module.NONE;
+        this.mValue = false;
     }
 
     /*
@@ -116,7 +121,6 @@ public class SwerveEncoder{
         double off = getDegrees();
         setOffset(off);
     }
-
     /**
      * Ajusta el offset del encoder
      * @param offset offset (EN GRADOS)
@@ -124,7 +128,6 @@ public class SwerveEncoder{
     public void setOffset(double offset){
         this.offset = offset;
     }
-
     /**
      * Obtiene el offset actual para el encoder
      * @return offset en grados
@@ -148,7 +151,6 @@ public class SwerveEncoder{
         double angleEncoder = (encoder.getValue() * 360) / 4096;
         return (angleEncoder - offset);
     }
-
     /**
      * Obtiene los radianes del encoder
      * @return radianes del encoder
@@ -172,20 +174,18 @@ public class SwerveEncoder{
     public Rotation2d getRotation2D(){
         return Rotation2d.fromDegrees(getDegrees());
     }
-
     /**
-     * Checa si el encoder ha sido desconectado
-     * @return verdadero si el encoder ha sido desconectado
+     * Checa si el encoder esta activado manualmente
+     * @return falso si el encoder ha sido desactivado manualmente
      */
     public boolean isDisconnected(){
-        return encoder.getVoltage() == 0;
+        return mValue;
     }
-
     /**
-     * Checa si el encoder está conectado
-     * @return falso si el encoder ha sido desconectado
+     * Desconecta el encoder manualmente
+     * @param trigger
      */
-    public boolean isConnected(){
-        return !isDisconnected();
+    public void disconnectWhen(boolean trigger){
+        this.mValue = trigger;
     }
 }

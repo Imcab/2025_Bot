@@ -140,7 +140,10 @@ public class ModuleSpark{
       }
 
     public boolean isConnected(){
-      return module_Encoder.isConnected();
+      return !module_Encoder.isDisconnected();
+    }
+    public void setConnection(boolean v){
+      module_Encoder.disconnectWhen(v);
     }
     public void autoAdjust(){
       module_Encoder.adjustOffset();
@@ -167,7 +170,7 @@ public class ModuleSpark{
               // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
               // towards the setpoint, its velocity should increase. This is achieved by
               // taking the component of the velocity in the direction of the setpoint.
-              double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnPID.getPositionError());
+              double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnPID.getError());
       
               // Run drive controller
               double velocityRadPerSec = adjustSpeedSetpoint / SwerveConfig.measures.WHEELRADIUS;

@@ -28,7 +28,7 @@ public class DriveCommands {
     Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
     // Square magnitude for more precise control
-    linearMagnitude = QoLUtil.Square(linearMagnitude);
+    linearMagnitude = QoLUtil.square(linearMagnitude);
 
     // Return new linear velocity
     return new Pose2d(new Translation2d(), linearDirection)
@@ -52,7 +52,7 @@ public class DriveCommands {
           double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
           // Square values
-          omega = Math.copySign(QoLUtil.Square(omega), omega);
+          omega = Math.copySign(QoLUtil.square(omega), omega);
 
           ChassisSpeeds speeds =
               new ChassisSpeeds(
