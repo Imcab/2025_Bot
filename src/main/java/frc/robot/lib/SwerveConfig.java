@@ -5,19 +5,17 @@ import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
-import frc.robot.lib.util.QoLUtil;
 
 public class SwerveConfig{
 
     public class gyro{
         public static final double angularSpeedTrigger = Units.degreesToRadians(720); //720 degxsec
-        public static final boolean shouldInvert = false;
+        public static final boolean shouldInvert = true;
     }
     public class speeds {
         public static final double MAX_LINEAR_SPEED = Units.feetToMeters(19.0); //5.7912
         public static final double MAX_ANGULAR_SPEED = MAX_LINEAR_SPEED / measures.DRIVE_BASE_RADIUS;
-        public static final double TrackMaxSpeed = QoLUtil.percentageOf(75, MAX_LINEAR_SPEED);
-        public static final double TrackMaxAngularSpeed = Math.PI;
+        
     }
     
     public class measures{
@@ -45,8 +43,8 @@ public class SwerveConfig{
     }
 
     public class currentLimiting{
-        public static final int driveCurrentLimit = 40;
-        public static final int turnCurrentLimit = 20;
+        public static final int driveCurrentLimit = 30;
+        public static final int turnCurrentLimit = 25;
         
     }
 

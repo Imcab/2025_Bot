@@ -4,7 +4,6 @@ package frc.robot.lib.util;
 public class QoLUtil {
     //metodos para hacer el código más flexible y menos tedioso de manejar
 
-    //:v
     public static double square(double x){
         return x * x;
     }

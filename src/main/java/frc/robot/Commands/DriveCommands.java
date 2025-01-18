@@ -11,14 +11,17 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Subsystems.DriveTrain;
+import frc.robot.Subsystems.Drive.swerve;
+import frc.robot.lib.Alerts;
 import frc.robot.lib.util.QoLUtil;
 
 import java.util.function.DoubleSupplier;
 
-public class DriveCommands {
-  private static final double DEADBAND = 0.1;
 
+
+public class DriveCommands {
+
+  private static final double DEADBAND = 0.1;
 
   private DriveCommands() {}
 
@@ -36,11 +39,11 @@ public class DriveCommands {
         .getTranslation();
   }
 
-  /**
-   * Field relative drive command using two joysticks (controlling linear and angular velocities).
-   */
+  
+   //Field relative drive command using two joysticks (controlling linear and angular velocities).
+   
   public static Command joystickDrive(
-      DriveTrain drive,
+      swerve drive,
       DoubleSupplier xSupplier,
       DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
@@ -71,31 +74,42 @@ public class DriveCommands {
         },
         drive);
   }
-
   
-  public static Command resetHeading(DriveTrain drive){
-        return Commands.runOnce(()-> {drive.resetHeading();}, drive);
+  public static Command resetHeading(swerve drive){
+        return Commands.runOnce(()-> {drive.resetHeading();
+        Alerts.sendNavxReset();}, drive);
   }
 
-  public static Command brake(DriveTrain drive){
-        return Commands.run(()->{drive.stopWithX();}, drive);
+  public static Command brake(swerve drive){
+        return Commands.run(()->{
+            
+            drive.stopWithX();
+            
+        }, drive);
   }
 
   public static Command getInRange(
-      DriveTrain drive,
+      swerve drive,
       DoubleSupplier ySupplier) {
 
     final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
   
     return Commands.run(
         () -> {
-    var ySpeed =
-        -m_yspeedLimiter.calculate(MathUtil.applyDeadband(ySupplier.getAsDouble(), 0.02));
+
+        drive.requestLime();
+
+        var ySpeed =
+        -m_yspeedLimiter.calculate(MathUtil.applyDeadband(ySupplier.getAsDouble(), DEADBAND));
             
-    drive.centerWithApriltag(ySpeed);
+        drive.centerWithApriltag(ySpeed);
 
         },
-        drive);
-  }
-  
+    
+        drive).finallyDo(
+        drive::stopAndEject
+        );
+    }
+
 }
+  

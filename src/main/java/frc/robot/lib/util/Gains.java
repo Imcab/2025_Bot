@@ -8,7 +8,6 @@ public class Gains {
     
     private double kP,kI,kD,kS,kV, acc, jerk;
 
-    private double lastkP, lastkI, lastkD, lastkS, lastkV, lastAcc, lastJerk;
 
     public Gains(double kP, double kI, double kD){
         this.kP = kP;
@@ -85,32 +84,6 @@ public class Gains {
         this.kV = value;
     }
 
-    //Checks if a value has changed
-    public boolean hasChanged() {
-        boolean changed = !(
-            kP == lastkP &&
-            kI == lastkI &&
-            kD == lastkD &&
-            kS == lastkS &&
-            kV == lastkV &&
-            acc == lastAcc &&
-            jerk == lastJerk
-        );
-
-        //Update to the last values
-        if (changed) {
-            lastkP = kP;
-            lastkI = kI;
-            lastkD = kD;
-            lastkS = kS;
-            lastkV = kV;
-            lastAcc = acc;
-            lastJerk = jerk;
-        }
-
-        return changed;
-    }
-
     //Resets all the values to 0
     public void reset(){
         setAcceleration(0);
@@ -120,13 +93,5 @@ public class Gains {
         setD(0);
         setS(0);
         setV(0);
-
-        lastkP = 0;
-        lastkI = 0;
-        lastkD = 0;
-        lastkS = 0;
-        lastkV = 0;
-        lastAcc = 0;
-        lastJerk = 0;
     }
 }

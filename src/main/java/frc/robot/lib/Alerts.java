@@ -8,7 +8,7 @@ public class Alerts {
 
     //Storage for all the notifications through elastic dashboard
 
-    public static final double mHeight = 2.5; //Notification height displayed on Elastic
+    public static final double mHeight = 12; //Notification height displayed on Elastic
 
     public static final double defaulWith = 350;
 

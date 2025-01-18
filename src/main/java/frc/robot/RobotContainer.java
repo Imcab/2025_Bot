@@ -8,21 +8,20 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.DriveCommands;
-import frc.robot.Subsystems.DriveTrain;
+import frc.robot.Commands.MoveRight;
 import frc.robot.Subsystems.Superstructure;
-import frc.robot.lib.Alerts;
 
 public class RobotContainer {
 
   CommandXboxController controller = new CommandXboxController(0);
   CommandXboxController controller2 = new CommandXboxController(1);
-  DriveTrain swerve;
+  frc.robot.Subsystems.Drive.swerve swerve;
   Superstructure superstructure;
   SendableChooser<Command> autoChooser = new SendableChooser<>();
   
 
   public RobotContainer() {
-    swerve = new DriveTrain();
+    swerve = new frc.robot.Subsystems.Drive.swerve();
     superstructure = new Superstructure();
 
     configureBindings();
@@ -33,16 +32,15 @@ public class RobotContainer {
     //Drive modes. Normal Drive
     swerve.setDefaultCommand(DriveCommands.joystickDrive(swerve, ()-> controller.getLeftY(),  ()-> controller.getLeftX(),  ()-> -controller.getRightX()));
     //Drive modes. Slowed Drive
-    controller.leftBumper().whileTrue(DriveCommands.joystickDrive(swerve, ()-> controller.getLeftY() * 0.5,  ()-> controller.getLeftX() * 0.5,  ()-> -controller.getRightX() * 0.5));
+    controller.leftBumper().whileTrue(DriveCommands.joystickDrive(swerve, ()-> controller.getLeftY() * 0.25,  ()-> controller.getLeftX() * 0.25,  ()-> -controller.getRightX() * 0.25));
 
-    controller.start().whileTrue(DriveCommands.resetHeading(swerve).finallyDo(()-> Alerts.sendNavxReset())); //resets heading
-    controller.x().whileTrue(DriveCommands.brake(swerve)); //Stops the swerve in an "X" pattern position
+   controller.start().whileTrue(DriveCommands.resetHeading(swerve)); //resets heading
+   controller.leftStick().whileTrue(DriveCommands.brake(swerve)); //Stops the swerve in an "X" pattern position
 
     //start alignment with limelight
-    controller.b().whileTrue(DriveCommands.getInRange(swerve, ()-> controller.getLeftX()));
+   controller.b().whileTrue(DriveCommands.getInRange(swerve, ()-> controller.getLeftX()));
 
-
-
+   controller.rightStick().whileTrue(new MoveRight(swerve, 0.3302));
 
   }
 

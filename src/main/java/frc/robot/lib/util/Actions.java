@@ -5,12 +5,12 @@ import java.util.function.BooleanSupplier;
 import edu.wpi.first.math.filter.Debouncer;
 
 public class Actions{
-   
-    public static void runOnce(BooleanSupplier condition, Runnable action){
 
-        boolean flag = false;
-
-        if (condition.getAsBoolean() && !flag) {
+    static boolean flag = false;
+       
+        public static void runOnce(BooleanSupplier condition, Runnable action){
+    
+            if (condition.getAsBoolean() && !flag) {
             action.run();
             flag = true;
         }else if (!condition.getAsBoolean()) {

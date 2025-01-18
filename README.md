@@ -20,6 +20,33 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 🔴ChangeLog abajo:
 
+# ✅COMMIT #17  - General Fixes
+
+## ⚠️**IMPORTANT CHANGES**
+
+- Se añadió un orientado al robot
+- Se agregó un método para desplazar el swerve a la derecha (en prueba)
+- Se añadio un método de alineación con limelight
+- Se eliminaron métodos inecesarios en el swerve
+- Se creó el sistema de visión (a medias)
+- Se creó la muñeca que anota el coral (terminado por probar)
+- Se creó el elevador (inicializado)
+
+## 🛠️ **GENERAL CHANGES**
+
+- Se eliminaron métodos de Gains.java
+- Se corrigió un error donde no se aplicaban las configuraciones al motor que giraba el swerve
+- Se quitó el negativo del PID que gira el swerve, esto por el punto mencionado arriba
+- Se crearon archivos para la Limelight y las cámaras de Photonvision (OV9281). Se pueden encontrar en /util/vision
+- Creación de vision config para almacenar rasgos importantes de la visión
+
+### 🔵 **OTHER FEATURES**
+
+- Se cambio el nombre de DriveTrain a sweve
+- Se crearon clases de PoseObservation para guardar datos de vision
+
+#### Imad - 17/01/2025
+
 # ✅COMMIT #16  - DASHBOARD and Swerve Overview
 
 ## ⚠️**IMPORTANT CHANGES**

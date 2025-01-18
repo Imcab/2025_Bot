@@ -1,8 +1,11 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.lib.SwerveConfig;
+import frc.robot.lib.vision.LimelightHelpers;
+import frc.robot.lib.vision.VisionConfig.limelight;
 
 public class RobotState{
 
@@ -16,11 +19,11 @@ public class RobotState{
     public static double batteryVoltsTriggerMed = 10;
     public static double gyroRate;
     public static boolean isEndgame = false;
-    public static double mPeriod = 0.0;
+    public static final double mPeriod = 0.02;
     public static boolean mConnection = false;
     public static batteryCharge mCharge;
     public static final String NetworkTables_AlertGroupID = "SystemState";
-
+    
     //mutators and access methods
 
     public static batteryCharge batteryState(){
@@ -36,9 +39,8 @@ public class RobotState{
         return mCharge;
     }
 
-    //Default periodic's function update rate 
-    public static double getPeriod(){
-        return 0.02;
+    public static boolean limeHasTarget(){
+        return LimelightHelpers.getTV(limelight.name);
     }
 
     public static double getMatchTime(){
@@ -60,8 +62,12 @@ public class RobotState{
         return gyroRate;
     }
 
+    public static boolean isRed(){
+        return DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get().equals(Alliance.Red);
+    }
+
     public static boolean isAngularVelAboveLimits(){
-        return gyroRate > SwerveConfig.gyro.angularSpeedTrigger;
+        return Math.abs(gyroRate) > SwerveConfig.gyro.angularSpeedTrigger;
     }
 
     public static boolean getGyroConnection(){
