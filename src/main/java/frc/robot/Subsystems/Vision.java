@@ -1,19 +1,54 @@
 package frc.robot.Subsystems;
 
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
+import frc.robot.lib.vision.AprilCam;
 import frc.robot.lib.vision.Limelight;
-import frc.robot.lib.vision.OV9281;
 import frc.robot.lib.vision.PoseObservation;
+import frc.robot.lib.vision.VisionConfig.photonvision;
 
 public class Vision {
     public Limelight limelight;
-    //public OV9281 photon1, photon2;
-    public boolean request = false;
+    public boolean Limerequest = false;
+    public AprilCam BL_cam, BR_cam;
+    private boolean loop_ONCE = false;
+
     public Vision(){
+
         limelight = new Limelight();
+
+        BL_cam = new AprilCam(
+        photonvision.backLeft,
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        photonvision.robotToBackLeft,
+        photonvision.trustBL);
+
+        BR_cam = new AprilCam(
+        photonvision.backRight,
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        photonvision.robotToBackRight,
+        photonvision.trustBR);
+
+        BL_cam.unfilterForDriver(photonvision.driveModeBL);
+        BR_cam.unfilterForDriver(photonvision.driveModeBR);
+
     }
 
     //Periodic method to call 
     public void periodic(){
+
+        //Loop-Once per loop
+        loop_ONCE = false;
+
+        if (!loop_ONCE) {
+            
+            //limelight.update();
+            BL_cam.update();
+            BR_cam.update();
+
+            loop_ONCE = true;
+
+        }
 
         if (limelight.hasTarget() && !limeIsRequested()) {
             limelight.blink();
@@ -23,15 +58,13 @@ public class Vision {
             limelight.LedOff();
         }
 
-        //starts the vision observation
-        //limelight.update();
 
     }
     public void limeRequest(boolean toggle){
-        request = toggle;
+        Limerequest = toggle;
     }
     public boolean limeIsRequested(){
-        return request;
+        return Limerequest;
     }
     public boolean isLimeEmpty(){
         return limelight.isEmpty();

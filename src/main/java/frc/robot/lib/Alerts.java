@@ -31,9 +31,7 @@ public class Alerts {
          new Notification(NotificationLevel.ERROR, "NAVX DISCONNECTED!", "Using alternate heading method", defaulWith, mHeight).withDisplaySeconds(errorSeconds);
     public static Notification navX_FastSpeed =
          new Notification(NotificationLevel.WARNING, "Angular speed is over limit!", "any vision updates will be ignored", defaulWith, mHeight).withDisplaySeconds(warningSeconds);      
-    public static Notification encoderShuts =
-         new Notification(NotificationLevel.WARNING, "Disconnecting a swerve encoder...", "Now using internal encoder", defaulWith,mHeight).withDisplaySeconds(warningSeconds);
-
+ 
     private Alerts(){}
     
     public static void sendCustom(Notification notification){
@@ -51,9 +49,6 @@ public class Alerts {
     }
     public static void sendFastSpeed(){
         Elastic.sendNotification(navX_FastSpeed);
-    }
-    public static void sendEncoderShuts(){
-        Elastic.sendNotification(encoderShuts);
     }
     public static void sendMediumBattery(){
         Elastic.sendNotification(mediumBattery);

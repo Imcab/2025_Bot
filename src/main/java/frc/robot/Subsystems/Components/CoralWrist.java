@@ -25,16 +25,9 @@ public class CoralWrist extends SubsystemBase{
 
     public SparkMaxConfig ConfigWrist , ConfigEater;
 
-    public enum CoralRequest{
-        NONE, RETRACT, IDLE, INTAKE, EJECT
-    }
-
-    public CoralRequest mRequest = CoralRequest.NONE;
-
     public boolean atGoal;
 
     public double target;
-
 
     public CoralWrist(){
 
@@ -93,56 +86,20 @@ public class CoralWrist extends SubsystemBase{
 
     @Override
     public void periodic(){
-
         SmartDashboard.putNumber("[CORALWRIST]: Position:", reportPosition());
-        SmartDashboard.putString("[CORALWRIST]: Request: " , getCoralRequest().toString());
         SmartDashboard.putBoolean("[CORALWRIST]: AtGoal:"  , atGoal);
     }
-
-    public void startRequest(CoralRequest goal){
-        this.mRequest = goal;
-        switch (mRequest) {
-            case NONE:
-                target = reportPosition();
-                lockPosition();
-                break;
-            case RETRACT:
-                target = Coral.Pos_Retract;
-                requestPosition(Coral.Pos_Retract);
-                requestEater(0); //stop movement
-                break;
-            case IDLE:
-                target = Coral.Pos_Idle;
-                requestPosition(Coral.Pos_Idle);
-                requestEater(0); //stop movement
-                break;
-            case INTAKE:
-                target  = Coral.Pos_Intake;
-                requestPosition(Coral.Pos_Intake);
-                requestEater(1); //start Intake
-                break;
-            case EJECT:
-                target = reportPosition();
-                requestEater(-1);
-                break;
-
-            default:
-                break;
-        }
-
-    }
-    public CoralRequest getCoralRequest(){
-        return mRequest;
-    }
-
     public double reportPosition(){
         return throughBore.getPosition();
     }
-    private void requestPosition(double degrees){
+    public void requestPosition(double degrees){
         controller.setReference(degrees,ControlType.kMAXMotionPositionControl);
     }
-    private void requestEater(double speed){
+    public void requestEater(double speed){
         eater.set(speed);
+    }
+    public void retract(){
+        requestPosition(0);
     }
 
     public void lockPosition(){
@@ -157,13 +114,4 @@ public class CoralWrist extends SubsystemBase{
         return Math.abs(reportPosition() - target) <= Coral.wristErrorTolerance;
     }
 
-    public boolean retracted(){
-        return getCoralRequest() == CoralRequest.RETRACT && isAtGOAL();
-    }
-    public boolean idle(){
-        return getCoralRequest() == CoralRequest.IDLE && isAtGOAL();
-    }
-    public boolean intaked(){
-        return getCoralRequest() == CoralRequest.INTAKE && isAtGOAL();
-    }
 }

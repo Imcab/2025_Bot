@@ -27,6 +27,7 @@ public class VisionConfig {
         
     }
     public static class photonvision {
+        
         public static final AprilTagFieldLayout layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025Reefscape);
 
         public static final String backLeft = "backLeft";
@@ -35,6 +36,9 @@ public class VisionConfig {
         public static final Transform3d robotToBackRight = new Transform3d(0, 0, 0, null);
         public static final boolean driveModeBL = false;
         public static final boolean driveModeBR = false;
+        public static final Matrix<N3,N1> trustBL = VecBuilder.fill(0.7, 0.7, 99999);
+        public static final Matrix<N3,N1> trustBR = VecBuilder.fill(0.7, 0.7, 99999);
+
     }
 
 }

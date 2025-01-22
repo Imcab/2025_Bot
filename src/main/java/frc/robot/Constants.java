@@ -57,9 +57,9 @@ public class Constants {
         public static final double MAX_VELOCITY = 0;
         public static final double MAX_ACC = 0;
         public static final double encoderPositionFactor = 360; //degrees
-        public static final double Pos_Retract = 0;
-        public static final double Pos_Idle = 0;
-        public static final double Pos_Intake = 0;
+        public static final double LAYDOWN = 0;
+        public static final double LAYDOWN_EJECT = LAYDOWN - 3; //degrees
+        public static final double INTAKE = 0;
         public static final double wristErrorTolerance = 0.1; 
     
     }
@@ -116,9 +116,6 @@ public class Constants {
  
         public static final boolean DrivemotorReversed = false;
         public static final boolean TurnmotorReversed = true;
-
-
-       
 
     }
 
