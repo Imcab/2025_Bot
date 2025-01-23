@@ -60,6 +60,18 @@ public class Vision {
 
 
     }
+    public boolean BL_hasResults(){
+        return BL_cam.hasResults();
+    }
+    public boolean BR_hasResults(){
+        return BR_cam.hasResults();
+    }
+    public PoseObservation observationBL(){
+        return BL_cam.observation();
+    }
+    public PoseObservation observationBR(){
+        return BR_cam.observation();
+    }
     public void limeRequest(boolean toggle){
         Limerequest = toggle;
     }

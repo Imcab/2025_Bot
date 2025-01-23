@@ -139,11 +139,24 @@ public class swerve extends SubsystemBase{
 
       LimelightHelpers.SetRobotOrientation(limelight.name, poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
       
-      /*if (!vision.isLimeEmpty()) {
+      if (!vision.isLimeEmpty()) {
         addObservationStd(vision.getLimeObservation().observation(),
          vision.getLimeObservation().withTimeStamps(),
           vision.getLimeObservation().getTrust());
-      }*/
+      }
+
+      if (vision.BL_hasResults()) {
+        addObservationStd(vision.observationBL().observation(),
+         vision.observationBL().withTimeStamps(),
+         vision.observationBL().getTrust());
+      }
+
+      if (vision.BR_hasResults()) {
+        addObservationStd(vision.observationBR().observation(),
+         vision.observationBR().withTimeStamps(),
+          vision.observationBR().getTrust());
+      }
+
 
       for (var module : modules) {
         module.periodic();

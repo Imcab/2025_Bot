@@ -15,7 +15,7 @@ public class MoveRight extends Command {
     private double targetY;
 
     public MoveRight(swerve drive, double distanceMeters) {
-    
+
         this.drive = drive;
         this.distanceMeters = distanceMeters;
         this.yController = new PIDController(

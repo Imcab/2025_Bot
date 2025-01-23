@@ -40,8 +40,22 @@ public class Constants {
   public class WristConstants {
   
     public class Algae {
-    
-        
+
+        public static final int CAN_ID_WRIST = 0;
+        public static final int CAN_ID_RIGHTWHEEL = 0;
+        public static final int CAN_ID_LEFTWHEEL = 0;
+        public static final boolean wristMotorInverted = false;
+        public static final boolean RightInverted = false;
+        public static final boolean LeftInverted = false;
+        public static final boolean throughBoreInverted = false;
+        public static final int wristCurrentLimit = 30;
+        public static final int WheelsCurrentLimit = 15;
+        public static final Gains closedLoopPID = new Gains(0,0,0);
+        public static final double encoderPositionFactor = 360; //degrees
+        public static final double wristErrorTolerance = 0.1;
+        public static final double lookDownSetpoint = 0; //0 degrees for default
+        public static final double extendSetpoimt = 0; //falta por configurar
+
     }
 
     public class Coral {

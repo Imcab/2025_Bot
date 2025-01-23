@@ -1,5 +1,7 @@
 # 🪼🦀WELCOME TO 2025 FRC: REEFSCAPE 3472 CODE
 
+![Last Commit](https://img.shields.io/github/last-commit/Imcab/2025_bot?color=yellow)
+
 ![heading](/images/heading.png)
 
 Bienvenidos al código de Buluk3472 de la temporada 2025, este código se caracteriza por manejo de swerve en diferentes formas, vision integrada y uso de pathplanner.
@@ -19,6 +21,19 @@ Encuentra nuestros subsistemas [aqui](/src/main/java/frc/robot/Subsystems).
 Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 🔴ChangeLog abajo:
+
+# ✅COMMIT #19  - Muñeca de Alga
+
+## ⚠️**IMPORTANT CHANGES**
+
+- Terminar la muñeca de alga
+- Agregar la pose photonvision a la odometria
+
+## 🛠️ **GENERAL CHANGES**
+
+- Added wrist Constants
+
+#### Ali, Chong, Juanma - 22/01/2025
 
 # ✅COMMIT #18  - Photonvision
 
