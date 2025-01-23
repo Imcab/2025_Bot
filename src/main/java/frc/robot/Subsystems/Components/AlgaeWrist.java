@@ -25,9 +25,9 @@ public class AlgaeWrist extends SubsystemBase{
     public AlgaeWrist(){
 
         //Declarations of the 3 motors (Both sides and the Angler), the PID to get the right degree and the absolute encoder
-        rightWheel = new SparkMax(0, MotorType.kBrushless);
-        leftWheel = new SparkMax(0, MotorType.kBrushless);
-        wrist = new SparkMax(0, MotorType.kBrushless);
+        rightWheel = new SparkMax(Algae.CAN_ID_RIGHTWHEEL, MotorType.kBrushless);
+        leftWheel = new SparkMax(Algae.CAN_ID_LEFTWHEEL, MotorType.kBrushless);
+        wrist = new SparkMax(Algae.CAN_ID_WRIST, MotorType.kBrushless);
 
         encoder = wrist.getAbsoluteEncoder();
 
