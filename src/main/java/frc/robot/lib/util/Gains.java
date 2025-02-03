@@ -6,8 +6,7 @@ package frc.robot.lib.util;
  */
 public class Gains {
     
-    private double kP,kI,kD,kS,kV, acc, jerk;
-
+    private final double kP,kI,kD,kS,kV, acc, jerk;
 
     public Gains(double kP, double kI, double kD){
         this.kP = kP;
@@ -61,37 +60,5 @@ public class Gains {
     public double getV(){
         return kV;
     }
-    //Setters
-    public void setAcceleration(double value){
-        this.acc = value;
-    }
-    public void setJerk(double value){
-        this.jerk = value;
-    }
-    public void setP(double value){
-        this.kP = value;
-    }
-    public void setI(double value){
-        this.kI = value;
-    }
-    public void setD(double value){
-        this.kD = value;
-    }
-    public void setS(double value){
-        this.kS = value;
-    }
-    public void setV(double value){
-        this.kV = value;
-    }
 
-    //Resets all the values to 0
-    public void reset(){
-        setAcceleration(0);
-        setJerk(0);
-        setP(0);
-        setI(0);
-        setD(0);
-        setS(0);
-        setV(0);
-    }
 }

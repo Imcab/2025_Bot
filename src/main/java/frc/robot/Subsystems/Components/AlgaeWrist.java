@@ -103,7 +103,7 @@ public class AlgaeWrist extends SubsystemBase{
         return Setpoint;
     }
 
-    public boolean atSetpoint(){
+    public boolean atGoal(){
         //checks if the wrist has completed the pid request
         return Math.abs(getPosition() - Setpoint) <= Algae.wristErrorTolerance;
     }

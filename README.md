@@ -22,6 +22,18 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 🔴ChangeLog abajo:
 
+# ✅COMMIT #20  - Elevador + colgador
+
+## ⚠️**IMPORTANT CHANGES**
+
+- Creacion de los subsistemas faltantes (elevador + colgador)
+
+## 🛠️ **GENERAL CHANGES**
+
+- Primera calibración del elevador
+
+#### Quique, Chucho, Andy, Esteban, Ame, Roro, Vane, Imad - 2/02/2025
+
 # ✅COMMIT #19  - Muñeca de Alga
 
 ## ⚠️**IMPORTANT CHANGES**

@@ -1,38 +1,23 @@
 package frc.robot.lib.vision;
 
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.RobotState;
-import frc.robot.lib.vision.LimelightHelpers.LimelightResults;
-import frc.robot.lib.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.lib.vision.VisionConfig.limelight;
 
 public class Limelight {
 
     public static String kName = VisionConfig.limelight.name;
+    LimelightHelpers.PoseEstimate mt2;
 
-    public static PoseEstimate MegaTagEstimate;
-
-    public PoseObservation mObservation;
-
-    public boolean state = false;
-    
     public Limelight(){
-       
-        if (!VisionConfig.limelight.useMegatag2) {
-            if (RobotState.isRed()) {
-                MegaTagEstimate = LimelightHelpers.getBotPoseEstimate_wpiRed(kName);
-            }
-            MegaTagEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(kName);
-        }
-
-        //asume MegaTag2 is used
-        if (RobotState.isRed() && VisionConfig.limelight.useMegatag2) {
-            MegaTagEstimate = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(kName);
-        }
-        MegaTagEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(kName);
     }
 
     public void blink(){
         LimelightHelpers.setLEDMode_ForceBlink(kName);
+    }
+    public boolean isConnected(){
+        double lastUpdate = RobotController.getFPGATime() - LimelightHelpers.getLatency_Pipeline(kName)/1000;
+        return lastUpdate < 250;
     }
     public void LedOn(){
         LimelightHelpers.setLEDMode_ForceOn(kName);
@@ -50,43 +35,28 @@ public class Limelight {
         return LimelightHelpers.getTX(kName);
     }
     public boolean hasTarget(){
-        return LimelightHelpers.getTV(kName);
+        return LimelightHelpers.getTV(kName) && isConnected();
     }
     public int targets(){
         return LimelightHelpers.getTargetCount(kName);
     }
-    public LimelightResults results(){
-        return LimelightHelpers.getLatestResults(kName);
-    }
-    
+ 
     public void update(){
 
-        boolean doRejectUpdate = false;
-        
-      if(RobotState.isAngularVelAboveLimits() || MegaTagEstimate.tagCount == 0){
-        doRejectUpdate = true;
-        setVisionReady(false);
-      }
-      if(!doRejectUpdate)
-      {
-        setVisionReady(true);
-        sendObservation(new PoseObservation(MegaTagEstimate.pose, MegaTagEstimate.timestampSeconds, limelight.trust));
-      }
+        if (RobotState.isRed()) {
+            mt2 = LimelightHelpers.getBotPoseEstimate_wpiRed_MegaTag2(kName);
+        }
+
+        mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(kName);
+
     }
 
-    private void setVisionReady(boolean v){
-        this.state = v;
-    }
-    public boolean isEmpty(){
-        return state;
-    }
-
-    private void sendObservation(PoseObservation observation){
-        this.mObservation = observation;
+    public boolean hasResults(){
+        return mt2.tagCount > 0 && isConnected();
     }
 
     public PoseObservation getObservation(){
-        return mObservation;
+        return new PoseObservation(mt2.pose, mt2.timestampSeconds, limelight.trust);
     }
 
     public double rangeForward(){

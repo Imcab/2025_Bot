@@ -42,7 +42,7 @@ public class Vision {
 
         if (!loop_ONCE) {
             
-            //limelight.update();
+            limelight.update();
             BL_cam.update();
             BR_cam.update();
 
@@ -72,32 +72,17 @@ public class Vision {
     public PoseObservation observationBR(){
         return BR_cam.observation();
     }
+    public PoseObservation observationLime(){
+        return limelight.getObservation();
+    }
     public void limeRequest(boolean toggle){
         Limerequest = toggle;
     }
     public boolean limeIsRequested(){
         return Limerequest;
     }
-    public boolean isLimeEmpty(){
-        return limelight.isEmpty();
-    }
-    public PoseObservation getLimeObservation(){
-        return limelight.getObservation();
-    }
-    public double limeTY(){
-        return limelight.ty();
-    }
-    public double limeTX(){
-        return limelight.tx();
-    }
-    public double limeTA(){
-        return limelight.tagPercentage();
-    }
-    public double limeTargetsCount(){
-        return limelight.targets();
-    }
-    public boolean hasTarget(){
-        return limelight.hasTarget();
+    public boolean lime_hasResults(){
+        return limelight.hasResults();
     }
     public double aim(){
         return limelight.aimAngular();

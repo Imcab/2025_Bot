@@ -4,8 +4,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.lib.SwerveConfig;
-import frc.robot.lib.vision.LimelightHelpers;
-import frc.robot.lib.vision.VisionConfig.limelight;
 
 public class RobotState{
 
@@ -37,10 +35,6 @@ public class RobotState{
             mCharge = batteryCharge.mHIGH;
         }
         return mCharge;
-    }
-
-    public static boolean limeHasTarget(){
-        return LimelightHelpers.getTV(limelight.name);
     }
 
     public static double getMatchTime(){

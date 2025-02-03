@@ -4,80 +4,191 @@
 
 package frc.robot.Subsystems.Components;
 
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.StrictFollower;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
+import frc.robot.lib.tidal.Domain;
 
-public class Elevator extends SubsystemBase {
+public class Elevator extends SubsystemBase{
 
-  //Crea los dos motores y la comfiguracion para los dos
-  public TalonFX Leader;
-  public TalonFX Slave;
-  public TalonFXConfiguration configLeader, configSlave;
-  
-  //Constructor o "Init"
-  public Elevator() {
+  private final SparkMax leader, follower;
+  private final SparkMaxConfig leaderConfig, followerConfig;
+  private final RelativeEncoder leaderEncoder, followerEncoder;
+  private double currentSetpoint = 0; //init current setpoint
 
-    //Asigna valores
-    Leader = new TalonFX(ElevatorConstants.CAN_ID_LEADER);
-    Slave = new TalonFX(ElevatorConstants.CAN_ID_SLAVE);
-
-    configLeader = new TalonFXConfiguration();
-    configSlave = new TalonFXConfiguration();
-
-    //Carga y actualiza las configuraciones al iniciarse el subsistema
-    flashConfigs();
-
-    /*Esto hace que el motor esclavo siga siempre al motor Leader sin tener que mandarle una señal:
-    Ej: si yo pongo en el código Leader.set(0.5), el motor "Slave tambien se moverá a 0.5 sin necesidad de hacer nada"
-    */
-    Slave.setControl(new StrictFollower(Leader.getDeviceID())); 
+  public enum ELEVATOR_LEVELS{
+    k1,k2,k3
   }
 
-  //Función para llamar en el constructor donde se aplicará toda la configuración de los motores
-  private void flashConfigs(){
+  ELEVATOR_LEVELS tracker = ELEVATOR_LEVELS.k1;
 
-    //restore factory defaults
-    Leader.getConfigurator().apply(new TalonFXConfiguration());
-    Slave.getConfigurator().apply(new TalonFXConfiguration());
+  PIDController k1Controller;
+  PIDController k2Controller;
+  PIDController k3Controller;
 
-    //Aqui se decide si se invierten o no los motores al igual q los pone para q frenen de golpe
-    configLeader.MotorOutput.Inverted = ElevatorConstants.leaderIV;
-    configSlave.MotorOutput.Inverted = ElevatorConstants.slaveIV;
-    configLeader.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    configSlave.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    
-    var pidGains = configLeader.Slot0;
+  public Elevator(){
 
-    //Constantes del PID
-    pidGains.kP = ElevatorConstants.motionMagicGains.getP();
-    pidGains.kI = ElevatorConstants.motionMagicGains.getI();
-    pidGains.kD = ElevatorConstants.motionMagicGains.getD();
-    pidGains.kS = ElevatorConstants.motionMagicGains.getS();
-    pidGains.kV = ElevatorConstants.motionMagicGains.getV();
-    pidGains.kA = ElevatorConstants.motionMagicGains.getAcceleration();
-    
-    var motionMagicGains = configLeader.MotionMagic;
+    k1Controller = new PIDController(
+    ElevatorConstants.k1_GAINS.getP(),
+    ElevatorConstants.k1_GAINS.getI(),
+    ElevatorConstants.k1_GAINS.getD());
 
-    //valores más específicos del motion magic
-    motionMagicGains.MotionMagicAcceleration = ElevatorConstants.MM_Acc;
-    motionMagicGains.MotionMagicCruiseVelocity = ElevatorConstants.MM_CruiseVel;
-    motionMagicGains.MotionMagicJerk = ElevatorConstants.MM_Jerk;
-    motionMagicGains.MotionMagicExpo_kA = ElevatorConstants.MM_ExpoKa;
-    motionMagicGains.MotionMagicExpo_kV = ElevatorConstants.MM_ExpoKv;
 
-    //Carga y aplica las configuraciones
-    Leader.getConfigurator().apply(configLeader);
-    Slave.getConfigurator().apply(configSlave);
+    k2Controller = new PIDController(
+    ElevatorConstants.k2_GAINS.getP(),
+    ElevatorConstants.k2_GAINS.getI(),
+    ElevatorConstants.k2_GAINS.getD());
+
+    k3Controller = new PIDController(
+    ElevatorConstants.k3_GAINS.getP(),
+    ElevatorConstants.k3_GAINS.getI(),
+    ElevatorConstants.k3_GAINS.getD());
+
+    //Set for all PIDS an error tolerance of 1.5 cm
+    k1Controller.setTolerance(ElevatorConstants.ERROR_TOLERANCE);
+    k2Controller.setTolerance(ElevatorConstants.ERROR_TOLERANCE);
+    k3Controller.setTolerance(ElevatorConstants.ERROR_TOLERANCE);
+
+    leaderConfig = new SparkMaxConfig();
+    followerConfig = new SparkMaxConfig();
+
+    leader = new SparkMax(ElevatorConstants.CAN_ID_LEADER, MotorType.kBrushless);
+    follower = new SparkMax(ElevatorConstants.CAN_ID_SLAVE, MotorType.kBrushless);
+
+    leaderEncoder = leader.getEncoder();
+    followerEncoder = follower.getEncoder();
+
+    resetEncoders();
+
+    burnFlash();
+
   }
 
-  //Método periódico
+  public void resetEncoders(){
+    leaderEncoder.setPosition(0);
+    followerEncoder.setPosition(0);
+  }
+
+  private void burnFlash(){
+
+    leader.setCANTimeout(250);
+
+    leaderConfig.idleMode(IdleMode.kCoast).
+    inverted(ElevatorConstants.leaderInverted);
+    
+    leader.configure(leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    leader.setCANTimeout(0);
+
+    follower.setCANTimeout(250);
+
+    followerConfig.idleMode(IdleMode.kCoast).
+    follow(ElevatorConstants.CAN_ID_LEADER, ElevatorConstants.slaveInverted);
+ 
+    follower.configure(followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    follower.setCANTimeout(0);
+
+  }
+
   @Override
-  public void periodic() {
+  public void periodic(){
+
+    SmartDashboard.putNumber("Leader pos", getLeaderPosition());
+    SmartDashboard.putNumber("Slave pos", getFollowerPosition());
+    SmartDashboard.putNumber("Average pos", getAveragePosition());
+
+    SmartDashboard.putNumber("PIDOutput", leader.getAppliedOutput());
+    SmartDashboard.putNumber("PIDNumber", getSetpoint());
+
+    Domain retract2 = new Domain(ElevatorConstants.SETPOINT_RETRACT, ElevatorConstants.SETPOINT_L2);
+    Domain retactl3 = new Domain(ElevatorConstants.SETPOINT_L2, ElevatorConstants.SETPOINT_L3);
+    Domain retactl4 = new Domain(ElevatorConstants.SETPOINT_L3, ElevatorConstants.SETPOINT_L4);
+
+    if (retract2.inRange(getLeaderPosition())) {
+        tracker = ELEVATOR_LEVELS.k1;
+    }
+
+    if (retactl3.inRange(getLeaderPosition())) {
+        tracker = ELEVATOR_LEVELS.k2;
+    }
+
+    if (retactl4.inRange(getLeaderPosition())) {
+        tracker = ELEVATOR_LEVELS.k3;
+    }
+
+    SmartDashboard.putString("PIDLevels", tracker.toString());
 
   }
+
+  public double getLeaderPosition(){
+    return leaderEncoder.getPosition() * ElevatorConstants.CONVERSION_FACTOR + ElevatorConstants.ELEVATOR_OFFSET;
+  }
+  public double getFollowerPosition(){
+    return followerEncoder.getPosition() * ElevatorConstants.CONVERSION_FACTOR + ElevatorConstants.ELEVATOR_OFFSET;
+  }
+
+  public double getAveragePosition(){
+    double avg = (getLeaderPosition() + getFollowerPosition()) / 2;
+    return avg;
+  }
+
+  public double getSetpoint(){
+    return currentSetpoint;
+  }
+
+  public void runSpeed(double speed){
+    leader.set(speed);
+  }
+  public void runRequest(double height){
+    currentSetpoint = height;
+
+    //Run for different PID control
+    switch (tracker) {
+        case k1:
+        leader.set(k1Controller.calculate(getLeaderPosition(), height));
+            break;
+        case k2:
+        leader.set(k2Controller.calculate(getLeaderPosition(), height));
+            break;
+
+        case k3:
+        leader.set(k3Controller.calculate(getLeaderPosition(), height));
+            break;
+        default:
+            break;
+    }
+  }
+  public void retract(){
+    runRequest(ElevatorConstants.SETPOINT_RETRACT);
+  }
+  public void toL2(){
+    runRequest(ElevatorConstants.SETPOINT_L2);
+  }
+  public void toL3(){
+    runRequest(ElevatorConstants.SETPOINT_L3);
+  }
+  public void toL4(){
+    runRequest(ElevatorConstants.SETPOINT_L4);
+  }
+  public void toFeeder(){
+    runRequest(ElevatorConstants.SETPOINT_FEEDER);
+  }
+  public boolean atGoal(){
+    return Math.abs(getLeaderPosition() - currentSetpoint) <= ElevatorConstants.ERROR_TOLERANCE;
+  }
+
+  public void stop(){
+    leader.stopMotor();
+  }
+  
 }

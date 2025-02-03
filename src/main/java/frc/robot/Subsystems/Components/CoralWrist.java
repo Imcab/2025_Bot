@@ -110,7 +110,7 @@ public class CoralWrist extends SubsystemBase{
         wrist.stopMotor();
         eater.stopMotor();
     }
-    public boolean isAtGOAL(){
+    public boolean atGoal(){
         return Math.abs(reportPosition() - target) <= Coral.wristErrorTolerance;
     }
 

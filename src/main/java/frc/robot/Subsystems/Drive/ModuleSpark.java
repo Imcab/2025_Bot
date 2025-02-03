@@ -140,7 +140,7 @@ public class ModuleSpark {
     public void periodic(){
         if (angleSetpoint != null) {
             turnSparkMax.setVoltage(
-                turnPID.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+                turnPID.calculate(getRotation().getRadians(), angleSetpoint.getRadians()));
       
             // Run closed loop drive control
             // Only allowed if closed loop turn control is running
@@ -161,29 +161,23 @@ public class ModuleSpark {
           }
 
     }
-  
-    public Rotation2d AngleEncoder(){
 
+    public double getDegrees(){
       double encoderBits = AbsoluteEncoder.getValue();
       double angleEncoder = (encoderBits * 360) / 4096;
 
-      return Rotation2d.fromDegrees(angleEncoder - Offset);
-
+      return angleEncoder - Offset;
     }
-    public Rotation2d getAngle(){
-        return new Rotation2d(AngleEncoder().getRadians());
-    }
-
-    public Rotation2d AngleEncoderODOMETRY(){
-        double angleFixed = getAngle().getDegrees();
-        return Rotation2d.fromDegrees(angleFixed);
+  
+    public Rotation2d getRotation(){
+      return Rotation2d.fromDegrees(getDegrees());
     }
 
     public SwerveModuleState runSetpoint(SwerveModuleState state) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
 
-    state.optimize(getAngle());
+    state.optimize(getRotation());
   
     angleSetpoint = state.angle;
     speedSetpoint = state.speedMetersPerSecond;
@@ -202,10 +196,10 @@ public class ModuleSpark {
     return Units.rotationsPerMinuteToRadiansPerSecond(enc_drive.getVelocity()) / SwerveConfig.reductions.DriveReduction;
   }
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(getDrivePositionMeters(), new Rotation2d(AngleEncoderODOMETRY().getRadians()));
+    return new SwerveModulePosition(getDrivePositionMeters(), new Rotation2d(getRotation().getRadians()));
   }
   public SwerveModuleState getState(){
-    return new SwerveModuleState(getDriveVelocityMetersxSec(), new Rotation2d(AngleEncoderODOMETRY().getRadians()));
+    return new SwerveModuleState(getDriveVelocityMetersxSec(), new Rotation2d(getRotation().getRadians()));
   }
 
   public void stop() {
