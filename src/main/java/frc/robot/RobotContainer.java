@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Commands.DriveCommands.DriveCommands;
-import frc.robot.Subsystems.Superstructure;
+//import frc.robot.Subsystems.Superstructure;
 import frc.robot.Subsystems.Drive.swerve;
 
 public class RobotContainer {
@@ -19,11 +19,11 @@ public class RobotContainer {
   private final CommandXboxController controller = new CommandXboxController(0);
   private final CommandXboxController controller2 = new CommandXboxController(1);
   private final swerve swerve;
-  private final Superstructure superstructure;
+  //private final Superstructure superstructure;
   
   public RobotContainer() {
     swerve = new swerve();
-    superstructure = new Superstructure();
+    //superstructure = new Superstructure();
 
     configureBindings();
   }

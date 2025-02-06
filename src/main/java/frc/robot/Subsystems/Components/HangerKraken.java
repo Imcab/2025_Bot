@@ -22,8 +22,7 @@ public class HangerKraken extends SubsystemBase {
     private double rightPosition;
 
     public HangerKraken () {
-
-
+        
         RightHanger = new TalonFX(ConstantsHanger.RightHangerPort);
         LeftHanger = new TalonFX(ConstantsHanger.LeftHangerPort);
 
@@ -33,13 +32,13 @@ public class HangerKraken extends SubsystemBase {
         LHangerConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         RHangerConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
-        LHangerConfiguration.Slot0.kP = ConstantsHanger.kP;
-        LHangerConfiguration.Slot0.kI = ConstantsHanger.kI;
-        LHangerConfiguration.Slot0.kD = ConstantsHanger.kD;
+        LHangerConfiguration.Slot0.kP = ConstantsHanger.hangerGains.getP();
+        LHangerConfiguration.Slot0.kI = ConstantsHanger.hangerGains.getI();
+        LHangerConfiguration.Slot0.kD = ConstantsHanger.hangerGains.getD();
     
-        RHangerConfiguration.Slot0.kP = ConstantsHanger.kP;
-        RHangerConfiguration.Slot0.kI = ConstantsHanger.kI;
-        RHangerConfiguration.Slot0.kD = ConstantsHanger.kD;
+        RHangerConfiguration.Slot0.kP = ConstantsHanger.hangerGains.getP();
+        RHangerConfiguration.Slot0.kI = ConstantsHanger.hangerGains.getI();
+        RHangerConfiguration.Slot0.kD = ConstantsHanger.hangerGains.getD();
 
         RightHanger.getConfigurator().apply(RHangerConfiguration);
         LeftHanger.getConfigurator().apply(LHangerConfiguration);
@@ -80,5 +79,10 @@ public class HangerKraken extends SubsystemBase {
       //RightHanger.set(speed);
       //LeftHanger.set(speed);
 
+    }
+
+    public void stopAll(){
+        RightHanger.stopMotor();
+        LeftHanger.stopMotor();
     }
 }

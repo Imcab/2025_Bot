@@ -39,7 +39,6 @@ public class DriveCommands {
         .getTranslation();
   }
 
-  
    //Field relative drive command using two joysticks (controlling linear and angular velocities).
    
   public static Command joystickDrive(

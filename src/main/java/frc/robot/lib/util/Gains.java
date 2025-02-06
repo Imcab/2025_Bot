@@ -61,4 +61,12 @@ public class Gains {
         return kV;
     }
 
+    public double[] getPID(){
+        return new double[]{kP,kI,kD};
+    }
+
+    public Gains toPID(double[] pid){
+        return new Gains(pid[0], pid[1], pid[2]);
+    }
+
 }

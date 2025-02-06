@@ -2,6 +2,7 @@ package frc.robot.lib.vision;
 
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.RobotState;
+import frc.robot.lib.vision.LimelightHelpers.LimelightResults;
 import frc.robot.lib.vision.VisionConfig.limelight;
 
 public class Limelight {
@@ -22,23 +23,30 @@ public class Limelight {
     public void LedOn(){
         LimelightHelpers.setLEDMode_ForceOn(kName);
     }
+
     public void LedOff(){
         LimelightHelpers.setLEDMode_ForceOff(kName);
     }
+
     public double ty(){
         return LimelightHelpers.getTY(kName);
     }
+
     public double tagPercentage(){
         return LimelightHelpers.getTA(kName);
     }
+
     public double tx(){
         return LimelightHelpers.getTX(kName);
     }
+
     public boolean hasTarget(){
         return LimelightHelpers.getTV(kName) && isConnected();
     }
+
     public int targets(){
         return LimelightHelpers.getTargetCount(kName);
+        
     }
  
     public void update(){
@@ -48,11 +56,17 @@ public class Limelight {
         }
 
         mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(kName);
-
     }
 
     public boolean hasResults(){
         return mt2.tagCount > 0 && isConnected();
+    }
+
+    public boolean hasID(int ID){
+        
+        LimelightResults results = LimelightHelpers.getLatestResults(kName);
+
+        return hasTarget() && results.valid && results.pipelineID == ID;
     }
 
     public PoseObservation getObservation(){

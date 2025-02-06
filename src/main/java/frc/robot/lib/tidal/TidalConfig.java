@@ -1,6 +1,7 @@
 package frc.robot.lib.tidal;
 
 import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.util.Units;
 import frc.robot.lib.tidal.BranchFamily.CompletedType;
@@ -33,20 +34,22 @@ public class TidalConfig {
         public static Coordinate leftFeederAlign = new Coordinate(1.12, 6.96, 124.88);
         public static Coordinate rightFeederAlign = new Coordinate(1.17, 1.04, -125.75);
 
-        public static Coordinate leftFeederAlignRED = new Coordinate(16.36, 0.93, -55.85);
-        public static Coordinate rightFeederAlignRED = new Coordinate(16.40, 6.96, 53.93);
+        //public static Coordinate leftFeederAlignRED = new Coordinate(16.36, 0.93, -55.85);
+        public static Coordinate leftFeederAlignRED = TidalUtil.coordinateFlip(leftFeederAlign);
+        public static Coordinate rightFeederAlignRED = TidalUtil.coordinateFlip(rightFeederAlign);
+        //public static Coordinate rightFeederAlignRED = new Coordinate(16.40, 6.96, 53.93);
             
     }
 
     public static class reef {
-    
         public static Node lNode = new Node(null, false);
         public static Branch leftBrachBlue = new Branch(null, null, null, null, null, null);
         public static BranchFamily leftFaceBlue = new BranchFamily(CompletedType.kBoth, null, null);
         public static TidalReef tidalBlue = new TidalReef(ReefPriority.LEFT_CENTER_RIGHT, null, null, null);
         //to the center of the reef with our robot at plus-minus 2.20
         public static Grid BlueReef = new Grid(4.5, 4, 220);
-        public static Grid RedReef = new Grid(13,4, 220);
+        //public static Grid RedReef = new Grid(13,4, 220);
+        public static Grid RedReef = new Grid(TidalUtil.coordinateFlip(TidalUtil.fastCoordinate(4.5, 4)), 220);
         
     }
 }

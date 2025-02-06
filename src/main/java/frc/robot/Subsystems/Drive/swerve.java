@@ -1,5 +1,7 @@
 package frc.robot.Subsystems.Drive;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -9,6 +11,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
@@ -20,24 +24,27 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Subsystems.Vision;
 import frc.robot.lib.SwerveConfig;
-import frc.robot.lib.util.QoLUtil;
 import frc.robot.lib.vision.LimelightHelpers;
-import frc.robot.lib.vision.PoseObservation;
 import frc.robot.lib.vision.VisionConfig;
 import frc.robot.lib.vision.VisionConfig.limelight;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.DriveFeedforwards;
-import com.pathplanner.lib.util.swerve.SwerveSetpoint;
-import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 
+
 public class swerve extends SubsystemBase{
+
+  //for displacement
+  public PIDController yController = new PIDController(
+                    DriveConstants.yGains.getP(),
+                    DriveConstants.yGains.getI(),
+                    DriveConstants.yGains.getD());
 
     //Starts vision:
     private final Vision vision = new Vision();  
@@ -61,6 +68,7 @@ public class swerve extends SubsystemBase{
      "ODOMETRY: ignoring vision updates due to high angular speed",
       AlertType.kWarning);
 
+    
     private static final double MAX_LINEAR_SPEED = Units.feetToMeters(19.0);
     private static final double TRACK_WIDTH_X = Units.inchesToMeters(28); 
     private static final double TRACK_WIDTH_Y = Units.inchesToMeters(31.7); 
@@ -87,6 +95,9 @@ public class swerve extends SubsystemBase{
 
     public swerve(){
 
+      //for displacement
+      yController.setTolerance(0.01);
+
       //for pathplanner
       AutoBuilder.configure(this::getPose, this::setPose, this::getChassisSpeeds , this::runVelocity,  new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)), SwerveConfig.ppConfig, () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red, this);
 
@@ -104,42 +115,40 @@ public class swerve extends SubsystemBase{
             }
           }).start();
 
+        
     }
 
     public void periodic(){
 
       //for test, remove if success:
-      SmartDashboard.putNumber("Robot match time", RobotState.getMatchTime());
+      //SmartDashboard.putNumber("Robot match time", RobotState.getMatchTime());
+
+      SmartDashboard.putNumber("FL ENC", modules[0].getAngle().getDegrees());
+      SmartDashboard.putNumber("FR ENC", modules[1].getAngle().getDegrees());
+      SmartDashboard.putNumber("BL ENC", modules[2].getAngle().getDegrees());
+      SmartDashboard.putNumber("BR ENC", modules[3].getAngle().getDegrees());
 
       RobotState.setAngularVelocity(getYawVelocityRadPerSec());
-      RobotState.setGyroConnection(navX.isConnected());
 
       gyroDisconnection.set(!navX.isConnected());
 
       overAngularLimit.set(RobotState.isAngularVelAboveLimits());
 
+
       odometrypublisher.set(getPose());
       ChassisSpeedpublisher.set(getChassisSpeeds());
       ModuleStatepublisher.set(getModuleStates());
 
-      LimelightHelpers.SetRobotOrientation(limelight.name, poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
-
       //update vision methods
       vision.periodic();
 
-      //Observations
-      if (vision.lime_hasResults()) {
-        addObservationStd(vision.observationLime());
-      }
-
-      if (vision.BL_hasResults()) {
-        addObservationStd(vision.observationBL());
-      }
-
-      if (vision.BR_hasResults()) {
-        addObservationStd(vision.observationBR());
-      }
-
+      LimelightHelpers.SetRobotOrientation(limelight.name, poseEstimator.getEstimatedPosition().getRotation().getDegrees(), 0, 0, 0, 0, 0);
+      
+      /*if (!vision.isLimeEmpty()) {
+        addObservationStd(vision.getLimeObservation().observation(),
+         vision.getLimeObservation().withTimeStamps(),
+          vision.getLimeObservation().getTrust());
+      }*/
 
       for (var module : modules) {
         module.periodic();
@@ -176,8 +185,7 @@ public class swerve extends SubsystemBase{
     }
 
     public double getAngle(){
-      double degrees = Math.IEEEremainder(navX.getAngle(), 360);
-      return QoLUtil.invertIf(degrees, SwerveConfig.gyro.shouldInvert);
+      return Math.IEEEremainder(-navX.getAngle(), 360);
     }
 
     public double getYawVelocityRadPerSec(){
@@ -221,8 +229,28 @@ public class swerve extends SubsystemBase{
     runVelocity(new ChassisSpeeds());
   }
 
+  public void runRobotRelative(double vx, double vy, double rot){
+
+    ChassisSpeeds relative = ChassisSpeeds.discretize(ChassisSpeeds.fromRobotRelativeSpeeds(
+      new ChassisSpeeds(vx, vy, rot),
+       rawGyroRotation),
+        RobotState.mPeriod);
+
+    SwerveModuleState[] state = kinematics.toSwerveModuleStates(relative);
+
+    SwerveDriveKinematics.desaturateWheelSpeeds(state, SwerveConfig.speeds.MAX_LINEAR_SPEED);
+
+    // Send setpoints to modules
+    SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
+    for (int i = 0; i < 4; i++) {
+      // The module returns the optimized state, useful for logging
+      optimizedSetpointStates[i] = modules[i].runSetpoint(state[i]);
+    }
+    
+  }
+
   public void stopAndEject() {
-    stop();
+    runVelocity(new ChassisSpeeds());
     ejectLime();
   }
 
@@ -289,11 +317,11 @@ public class swerve extends SubsystemBase{
     vision.limeRequest(true);
   }
 
-  public void addObservationStd(PoseObservation observation){
-      poseEstimator.addVisionMeasurement(observation.observation(), observation.withTimeStamps(), observation.getTrust());
+  public void addObservationStd(Pose2d pose, double timeStamps, Matrix< N3, N1> std){
+      poseEstimator.addVisionMeasurement(pose, timeStamps, std);
   }
-  public void addObservation(PoseObservation observation){
-    poseEstimator.addVisionMeasurement(observation.observation(), observation.withTimeStamps());
+  public void addObservation(Pose2d pose, double timeStamps){
+    poseEstimator.addVisionMeasurement(pose, timeStamps);
 }
 
   public void ejectLime(){

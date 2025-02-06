@@ -4,13 +4,18 @@ import frc.robot.lib.util.Gains;
 
 public class Constants {
 
+    //Swerve 1-8
+    //Elevador 15-16
+    //Muñeca alga 12-14
+    //Muñeca coral 10-11
+    //Colgador 17-18
+
+    
     public class ConstantsHanger {
 
-        public static final int RightHangerPort = 0;
-        public static final int LeftHangerPort = 0;
-        public static final double kP = 0.5;
-        public static final double kI = 0.5;
-        public static final double kD = 0.01;
+        public static final int RightHangerPort = 17;
+        public static final int LeftHangerPort = 18;
+        public static final Gains hangerGains = new Gains(0.5, 0, 0.01);
     }
 
     public class ElevatorConstants {
@@ -38,9 +43,9 @@ public class Constants {
   
         public class Algae {
 
-            public static final int CAN_ID_WRIST = 0;
-            public static final int CAN_ID_RIGHTWHEEL = 0;
-            public static final int CAN_ID_LEFTWHEEL = 0;
+            public static final int CAN_ID_WRIST = 12;
+            public static final int CAN_ID_RIGHTWHEEL = 13;
+            public static final int CAN_ID_LEFTWHEEL = 14;
             public static final boolean wristMotorInverted = false;
             public static final boolean RightInverted = false;
             public static final boolean LeftInverted = false;
@@ -52,13 +57,14 @@ public class Constants {
             public static final double wristErrorTolerance = 0.1;
             public static final double lookDownSetpoint = 0; //0 degrees for default
             public static final double extendSetpoimt = 0; //falta por configurar
+            
 
         }
 
         public class Coral {
 
-            public static final int CAN_ID_WRIST = 0;
-            public static final int CAN_ID_EATER = 0;
+            public static final int CAN_ID_WRIST = 10;
+            public static final int CAN_ID_EATER = 11;
             public static final boolean wristMotorInverted = false;
             public static final boolean eaterInverted = false;
             public static final boolean throughBoreInverted = false;
@@ -72,6 +78,9 @@ public class Constants {
             public static final double LAYDOWN_EJECT = LAYDOWN - 3; //degrees
             public static final double INTAKE = 0;
             public static final double wristErrorTolerance = 0.1; 
+            public static final double L1 = 0;
+            public static final double L2 = 0;
+            public static final double SPEED_L1 = -0.3;
     
         }
 

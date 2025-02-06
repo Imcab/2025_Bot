@@ -1,6 +1,9 @@
 package frc.robot.Subsystems.Components;
 
-import com.revrobotics.AbsoluteEncoder;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
+
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -10,24 +13,25 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.WristConstants.Coral;
 
 public class CoralWrist extends SubsystemBase{
     
-    public SparkMax wrist; 
-    public SparkMax eater;
-    public AbsoluteEncoder throughBore;
-    public SparkClosedLoopController controller;
+    private SparkMax wrist; 
+    private RelativeEncoder wristEncoder;
+    private SparkMax eater;
 
-    public SparkMaxConfig ConfigWrist , ConfigEater;
+    private SparkClosedLoopController controller;
 
-    public boolean atGoal;
+    private SparkMaxConfig ConfigWrist , ConfigEater;
 
-    public double target;
+    private boolean atGoal;
+
+    private double target;
 
     public CoralWrist(){
 
@@ -35,27 +39,24 @@ public class CoralWrist extends SubsystemBase{
 
         wrist = new SparkMax(Coral.CAN_ID_WRIST, MotorType.kBrushless);
 
-        eater = new SparkMax(Coral.CAN_ID_EATER, MotorType.kBrushless);
-
-        throughBore = wrist.getAbsoluteEncoder();
+        wristEncoder = wrist.getEncoder();
 
         controller = wrist.getClosedLoopController();
+
+        eater = new SparkMax(Coral.CAN_ID_EATER, MotorType.kBrushless);
 
         ConfigWrist = new SparkMaxConfig();
         ConfigEater = new SparkMaxConfig();
 
         Burnflash();
+
+        setZero();
     }
 
     private void Burnflash(){
 
         wrist.setCANTimeout(250);
         eater.setCANTimeout(250);
-
-        //Config wrist
-        ConfigWrist.absoluteEncoder.
-            inverted(Coral.throughBoreInverted).
-            positionConversionFactor(Coral.encoderPositionFactor);
 
         ConfigWrist.
             inverted(Coral.wristMotorInverted).
@@ -65,12 +66,7 @@ public class CoralWrist extends SubsystemBase{
             p(Coral.closedLoopPID.getP()).
             i(Coral.closedLoopPID.getI()).
             d(Coral.closedLoopPID.getD()).
-            feedbackSensor(FeedbackSensor.kAbsoluteEncoder).
-        maxMotion.
-            maxVelocity(Coral.MAX_VELOCITY).
-            maxAcceleration(Coral.MAX_ACC).
-            positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
-
+            feedbackSensor(FeedbackSensor.kPrimaryEncoder);
         //Config eater
         ConfigEater.
             inverted(Coral.eaterInverted).
@@ -86,15 +82,28 @@ public class CoralWrist extends SubsystemBase{
 
     @Override
     public void periodic(){
-        SmartDashboard.putNumber("[CORALWRIST]: Position:", reportPosition());
+        SmartDashboard.putNumber("[CORALWRIST]: Position:", getPosition());
+        SmartDashboard.putNumber("[CORALWRIST]: RawPosition:", getRawPosition());
         SmartDashboard.putBoolean("[CORALWRIST]: AtGoal:"  , atGoal);
+        SmartDashboard.putNumber("[CORALWRIST]: Target:", target);
     }
-    public double reportPosition(){
-        return throughBore.getPosition();
+    
+    public double getRawPosition(){
+        return wristEncoder.getPosition();
     }
+    public double getPosition(){
+        return Degrees.convertFrom(getRawPosition(), Rotations);
+    }
+
+    public void setZero(){
+        wristEncoder.setPosition(0);
+    }
+
     public void requestPosition(double degrees){
-        controller.setReference(degrees,ControlType.kMAXMotionPositionControl);
+        this.target = degrees;
+        controller.setReference(Units.degreesToRotations(degrees),ControlType.kPosition);
     }
+
     public void requestEater(double speed){
         eater.set(speed);
     }
@@ -102,16 +111,21 @@ public class CoralWrist extends SubsystemBase{
         requestPosition(0);
     }
 
+    public boolean isWheelSpinning(){
+        return eater.get() != 0;
+    }
+
     public void lockPosition(){
-        requestPosition(reportPosition());
+        requestPosition(getRawPosition());
     }
 
     public void stop(){
         wrist.stopMotor();
         eater.stopMotor();
     }
+
     public boolean atGoal(){
-        return Math.abs(reportPosition() - target) <= Coral.wristErrorTolerance;
+        return Math.abs(getRawPosition() - target) <= Coral.wristErrorTolerance;
     }
 
 }

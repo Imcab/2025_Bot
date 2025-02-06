@@ -22,6 +22,15 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 🔴ChangeLog abajo:
 
+# ✅COMMIT #21  - SuperStructure First States
+
+## ⚠️**IMPORTANT CHANGES**
+
+- Creacion de la super estructura y sus dos primeros estados
+- Refinar el estado default ya que nunca puede terminar el comando (se cambió a un comando condicional)
+
+#### Todosss - 6/02/2025
+
 # ✅COMMIT #20  - Elevador + colgador
 
 ## ⚠️**IMPORTANT CHANGES**

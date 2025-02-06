@@ -140,7 +140,7 @@ public class ModuleSpark {
     public void periodic(){
         if (angleSetpoint != null) {
             turnSparkMax.setVoltage(
-                turnPID.calculate(getRotation().getRadians(), angleSetpoint.getRadians()));
+                turnPID.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
       
             // Run closed loop drive control
             // Only allowed if closed loop turn control is running
@@ -161,23 +161,24 @@ public class ModuleSpark {
           }
 
     }
+  
+    public Rotation2d AngleEncoder(){
 
-    public double getDegrees(){
       double encoderBits = AbsoluteEncoder.getValue();
       double angleEncoder = (encoderBits * 360) / 4096;
 
-      return angleEncoder - Offset;
+      return Rotation2d.fromDegrees(angleEncoder - Offset);
+
     }
-  
-    public Rotation2d getRotation(){
-      return Rotation2d.fromDegrees(getDegrees());
+    public Rotation2d getAngle(){
+        return new Rotation2d(AngleEncoder().getRadians());
     }
 
     public SwerveModuleState runSetpoint(SwerveModuleState state) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
 
-    state.optimize(getRotation());
+    state.optimize(getAngle());
   
     angleSetpoint = state.angle;
     speedSetpoint = state.speedMetersPerSecond;
@@ -196,10 +197,10 @@ public class ModuleSpark {
     return Units.rotationsPerMinuteToRadiansPerSecond(enc_drive.getVelocity()) / SwerveConfig.reductions.DriveReduction;
   }
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(getDrivePositionMeters(), new Rotation2d(getRotation().getRadians()));
+    return new SwerveModulePosition(getDrivePositionMeters(), new Rotation2d(getAngle().getRadians()));
   }
   public SwerveModuleState getState(){
-    return new SwerveModuleState(getDriveVelocityMetersxSec(), new Rotation2d(getRotation().getRadians()));
+    return new SwerveModuleState(getDriveVelocityMetersxSec(), new Rotation2d(getAngle().getRadians()));
   }
 
   public void stop() {

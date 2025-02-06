@@ -17,7 +17,7 @@ public class Vision {
 
         limelight = new Limelight();
 
-        BL_cam = new AprilCam(
+        /*BL_cam = new AprilCam(
         photonvision.backLeft,
         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
         photonvision.robotToBackLeft,
@@ -31,7 +31,7 @@ public class Vision {
 
         BL_cam.unfilterForDriver(photonvision.driveModeBL);
         BR_cam.unfilterForDriver(photonvision.driveModeBR);
-
+        */
     }
 
     //Periodic method to call 
@@ -43,8 +43,8 @@ public class Vision {
         if (!loop_ONCE) {
             
             limelight.update();
-            BL_cam.update();
-            BR_cam.update();
+            //BL_cam.update();
+            //BR_cam.update();
 
             loop_ONCE = true;
 
@@ -60,7 +60,7 @@ public class Vision {
 
 
     }
-    public boolean BL_hasResults(){
+    /*public boolean BL_hasResults(){
         return BL_cam.hasResults();
     }
     public boolean BR_hasResults(){
@@ -71,7 +71,7 @@ public class Vision {
     }
     public PoseObservation observationBR(){
         return BR_cam.observation();
-    }
+    }*/
     public PoseObservation observationLime(){
         return limelight.getObservation();
     }

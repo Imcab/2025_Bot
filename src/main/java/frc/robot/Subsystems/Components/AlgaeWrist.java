@@ -113,6 +113,10 @@ public class AlgaeWrist extends SubsystemBase{
         leftWheel.set(velocity);
         //Set the motors to the desired velocity
     }
+
+    public boolean areWheelsSpinning(){
+        return rightWheel.get() != 0;
+    }
     
     public void stop(){
         rightWheel.stopMotor();
