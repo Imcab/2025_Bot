@@ -19,12 +19,7 @@ public class Alerts {
     public static final double warningSeconds = 4.0;
 
     public static final double errorSeconds = 7.0;
-
-    public static Notification lowBattery =
-         new Notification(NotificationLevel.ERROR, "Low Battery detected!", "Change the battery NOW", defaulWith,mHeight).withDisplaySeconds(errorSeconds);
-    public static Notification mediumBattery =
-         new Notification(NotificationLevel.WARNING, "Approaching low battery!", "Change the battery", defaulWith, mHeight).withDisplaySeconds(warningSeconds);
-        
+   
     public static Notification navX_Reset =
          new Notification(NotificationLevel.INFO, "A navX reset has ocurred", "the robot's heading has been changed", defaulWith, mHeight).withDisplaySeconds(infoSeconds);
     public static Notification navX_Disconnected = 
@@ -37,10 +32,6 @@ public class Alerts {
     public static void sendCustom(Notification notification){
             Elastic.sendNotification(notification);
     }
-
-        public static void sendLowBattery(){
-            Elastic.sendNotification(lowBattery);
-    }
     public static void sendNavxReset(){
         Elastic.sendNotification(navX_Reset);
     }
@@ -50,8 +41,4 @@ public class Alerts {
     public static void sendFastSpeed(){
         Elastic.sendNotification(navX_FastSpeed);
     }
-    public static void sendMediumBattery(){
-        Elastic.sendNotification(mediumBattery);
-    }
-
 }

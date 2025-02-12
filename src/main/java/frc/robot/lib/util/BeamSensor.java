@@ -10,12 +10,8 @@ import edu.wpi.first.wpilibj.Timer;
 /**
  * Libreria de sensores conectados como Digital Input
  */
-public class Sensors {
+public class BeamSensor{
     
-    /**
-    * Métodos para el sensor infrarojo
-    */
-    public class BeamSensor{
         private final DigitalInput mbeam;
         private boolean lastStatus;
 	    private boolean tripped;
@@ -98,4 +94,4 @@ public class Sensors {
         }
     
    } 
-}
+

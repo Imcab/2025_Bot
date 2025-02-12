@@ -3,6 +3,7 @@ package frc.robot.lib.vision;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.RobotState;
 import frc.robot.lib.vision.LimelightHelpers.LimelightResults;
+import frc.robot.lib.vision.LimelightHelpers.PoseEstimate;
 import frc.robot.lib.vision.VisionConfig.limelight;
 
 public class Limelight {
@@ -11,6 +12,7 @@ public class Limelight {
     LimelightHelpers.PoseEstimate mt2;
 
     public Limelight(){
+        mt2 = new PoseEstimate(); //falto instanciarlo
     }
 
     public void blink(){
@@ -72,7 +74,7 @@ public class Limelight {
     public PoseObservation getObservation(){
         return new PoseObservation(mt2.pose, mt2.timestampSeconds, limelight.trust);
     }
-
+    
     public double rangeForward(){
 
         // simple proportional ranging control with Limelight's "ty" value

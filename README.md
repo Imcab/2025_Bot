@@ -22,6 +22,14 @@ Encuentra nuestros comandos [aqui](/src/main/java/frc/robot/Commands).
 
 🔴ChangeLog abajo:
 
+# ✅COMMIT #22  - V1.0.0 code
+
+## ⚠️**IMPORTANT CHANGES**
+
+- Primera versión completa de el código :D
+
+#### Todosss - 12/02/2025
+
 # ✅COMMIT #21  - SuperStructure First States
 
 ## ⚠️**IMPORTANT CHANGES**

@@ -15,7 +15,11 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogInput;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.lib.ClosedLoopControl;
 import frc.robot.lib.SwerveConfig;
+import frc.robot.lib.ClosedLoopControl.ClosedLoopRequest;
+import frc.robot.lib.ClosedLoopControl.OutputType;
+import frc.robot.lib.util.ModuleMap;
 
 
 public class ModuleSpark {
@@ -30,11 +34,14 @@ public class ModuleSpark {
     SparkMaxConfig config_drive, config_turn;
 
 
-    private final PIDController turnPID;
+    //private final PIDController turnPID;
+    private final ClosedLoopControl turnControl;
+    private final ClosedLoopRequest turnRequest;
     private final PIDController drivePID;
     private final SimpleMotorFeedforward drivFeedforward;
     private Rotation2d angleSetpoint = null; // Setpoint for closed loop control, null for open loop
     private Double speedSetpoint = null; // Setpoint for closed loop control, null for open loop
+    private ModuleMap map;
 
     double Offset;
 
@@ -45,48 +52,60 @@ public class ModuleSpark {
 
         drivePID = new PIDController(0.05, 0.0, 0.0);
         drivFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
-        turnPID = new PIDController(6.2, 0.0, 0.0);
+        //turnPID = new PIDController(6.2, 0.0, 0.0);
 
-        turnPID.enableContinuousInput(-Math.PI, Math.PI);
+        turnControl = new ClosedLoopControl(DriveConstants.turnGains, OutputType.kPositive);
+
+        turnRequest =  turnControl.new ClosedLoopRequest();
+
+
+        turnControl.enableContinuousInput(Math.PI);
+
+        turnControl.initTuning("TurnTune");
+
+        //turnPID.enableContinuousInput(-Math.PI, Math.PI);
 
         switch (index) {
           case 0:
-            driveSparkMax = new SparkMax(DriveConstants.frontLeft.DrivePort, MotorType.kBrushless);
-            turnSparkMax = new SparkMax(DriveConstants.frontLeft.TurnPort, MotorType.kBrushless);
-            AbsoluteEncoder = new AnalogInput(DriveConstants.frontLeft.EncPort);
-            isDriveMotorInverted = DriveConstants.frontLeft.DrivemotorReversed;
-            isTurnMotorInverted = DriveConstants.frontLeft.TurnmotorReversed;
-            Offset = DriveConstants.frontLeft.offset;
-  
+            map = DriveConstants.backRight.br;
+            driveSparkMax = new SparkMax(map.drive, MotorType.kBrushless);
+            turnSparkMax = new SparkMax(map.turn, MotorType.kBrushless);
+            AbsoluteEncoder = new AnalogInput(map.encoder);
+            isDriveMotorInverted = map.driveInv;
+            isTurnMotorInverted = map.turnInv;
+            Offset = map.off;
             
             break;
           case 1:
-            driveSparkMax = new SparkMax(DriveConstants.frontRight.DrivePort, MotorType.kBrushless);
-            turnSparkMax = new SparkMax(DriveConstants.frontRight.TurnPort, MotorType.kBrushless);
-            AbsoluteEncoder = new AnalogInput(DriveConstants.frontRight.EncPort);
-            isDriveMotorInverted = DriveConstants.frontRight.DrivemotorReversed;
-            isTurnMotorInverted = DriveConstants.frontRight.TurnmotorReversed;
-            Offset = DriveConstants.frontRight.offset; 
+            map = DriveConstants.backLeft.bl;
+            driveSparkMax = new SparkMax(map.drive, MotorType.kBrushless);
+            turnSparkMax = new SparkMax(map.turn, MotorType.kBrushless);
+            AbsoluteEncoder = new AnalogInput(map.encoder);
+            isDriveMotorInverted = map.driveInv;
+            isTurnMotorInverted = map.turnInv;
+            Offset = map.off;
             
 
             break;
           case 2:
-            driveSparkMax = new SparkMax(DriveConstants.backLeft.DrivePort, MotorType.kBrushless);
-            turnSparkMax = new SparkMax(DriveConstants.backLeft.TurnPort, MotorType.kBrushless);
-            AbsoluteEncoder = new AnalogInput(DriveConstants.backLeft.EncPort);
-            isDriveMotorInverted = DriveConstants.backLeft.DrivemotorReversed;
-            isTurnMotorInverted = DriveConstants.backLeft.TurnmotorReversed;
-            Offset = DriveConstants.backLeft.offset;
+            map = DriveConstants.frontRight.fr;
+            driveSparkMax = new SparkMax(map.drive, MotorType.kBrushless);
+            turnSparkMax = new SparkMax(map.turn, MotorType.kBrushless);
+            AbsoluteEncoder = new AnalogInput(map.encoder);
+            isDriveMotorInverted = map.driveInv;
+            isTurnMotorInverted = map.turnInv;
+            Offset = map.off;
             
 
             break;
           case 3:
-            driveSparkMax = new SparkMax(DriveConstants.backRight.DrivePort, MotorType.kBrushless);
-            turnSparkMax = new SparkMax(DriveConstants.backRight.TurnPort, MotorType.kBrushless);
-            AbsoluteEncoder = new AnalogInput(DriveConstants.backRight.EncPort);
-            isDriveMotorInverted = DriveConstants.backRight.DrivemotorReversed;
-            isTurnMotorInverted = DriveConstants.backRight.TurnmotorReversed;
-            Offset = DriveConstants.backRight.offset;
+            map = DriveConstants.frontLeft.fl;
+            driveSparkMax = new SparkMax(map.drive, MotorType.kBrushless);
+            turnSparkMax = new SparkMax(map.turn, MotorType.kBrushless);
+            AbsoluteEncoder = new AnalogInput(map.encoder);
+            isDriveMotorInverted = map.driveInv;
+            isTurnMotorInverted = map.turnInv;
+            Offset = map.off;
             
 
             break;
@@ -109,7 +128,7 @@ public class ModuleSpark {
     public void config_drive(){
         config_drive
         .inverted(isDriveMotorInverted)
-        .idleMode(IdleMode.kBrake)
+        .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(30)
         .voltageCompensation(12);
   
@@ -138,9 +157,14 @@ public class ModuleSpark {
       }
 
     public void periodic(){
+      turnControl.tuneWithInterface();
+      turnControl.graph("TurnGraph");
+
         if (angleSetpoint != null) {
             turnSparkMax.setVoltage(
-                turnPID.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+                //turnPID.calculate(AngleEncoder().getRadians(), angleSetpoint.getRadians()));
+
+                turnControl.runRequest(turnRequest.withReference(AngleEncoder().getRadians()).toSetpoint(angleSetpoint.getRadians())));
       
             // Run closed loop drive control
             // Only allowed if closed loop turn control is running
@@ -150,7 +174,7 @@ public class ModuleSpark {
               // When the error is 90°, the velocity setpoint should be 0. As the wheel turns
               // towards the setpoint, its velocity should increase. This is achieved by
               // taking the component of the velocity in the direction of the setpoint.
-              double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnPID.getPositionError());
+              double adjustSpeedSetpoint = speedSetpoint * Math.cos(turnControl.getCurrentError());
       
               // Run drive controller
               double velocityRadPerSec = adjustSpeedSetpoint / SwerveConfig.measures.WHEELRADIUS;
@@ -170,15 +194,12 @@ public class ModuleSpark {
       return Rotation2d.fromDegrees(angleEncoder - Offset);
 
     }
-    public Rotation2d getAngle(){
-        return new Rotation2d(AngleEncoder().getRadians());
-    }
 
     public SwerveModuleState runSetpoint(SwerveModuleState state) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
 
-    state.optimize(getAngle());
+    state.optimize(AngleEncoder());
   
     angleSetpoint = state.angle;
     speedSetpoint = state.speedMetersPerSecond;
@@ -197,10 +218,10 @@ public class ModuleSpark {
     return Units.rotationsPerMinuteToRadiansPerSecond(enc_drive.getVelocity()) / SwerveConfig.reductions.DriveReduction;
   }
   public SwerveModulePosition getPosition(){
-    return new SwerveModulePosition(getDrivePositionMeters(), new Rotation2d(getAngle().getRadians()));
+    return new SwerveModulePosition(getDrivePositionMeters(), AngleEncoder());
   }
   public SwerveModuleState getState(){
-    return new SwerveModuleState(getDriveVelocityMetersxSec(), new Rotation2d(getAngle().getRadians()));
+    return new SwerveModuleState(getDriveVelocityMetersxSec(), AngleEncoder());
   }
 
   public void stop() {
@@ -210,9 +231,5 @@ public class ModuleSpark {
     angleSetpoint = null;
     speedSetpoint = null;
   }
-
-
-
-
 
 }

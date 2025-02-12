@@ -18,6 +18,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.WristConstants.Coral;
+import frc.robot.lib.util.BeamSensor;
 
 public class CoralWrist extends SubsystemBase{
     
@@ -33,6 +34,9 @@ public class CoralWrist extends SubsystemBase{
 
     private double target;
 
+    private BeamSensor beamBreaker = new BeamSensor(Coral.DIO_PORT_SENSOR); 
+
+    //Declaracion de 
     public CoralWrist(){
 
         atGoal = false;
@@ -63,15 +67,15 @@ public class CoralWrist extends SubsystemBase{
             idleMode(IdleMode.kBrake).
             smartCurrentLimit(Coral.wristCurrentLimit).
         closedLoop.
-            p(Coral.closedLoopPID.getP()).
-            i(Coral.closedLoopPID.getI()).
-            d(Coral.closedLoopPID.getD()).
+            p(Coral.Gains.getP()).
+            i(Coral.Gains.getI()).
+            d(Coral.Gains.getD()).
             feedbackSensor(FeedbackSensor.kPrimaryEncoder);
         //Config eater
         ConfigEater.
-            inverted(Coral.eaterInverted).
+            inverted(Coral.wheelInverted).
             idleMode(IdleMode.kCoast).
-            smartCurrentLimit(Coral.eaterCurrentLimit);
+            smartCurrentLimit(Coral.wheelCurrentLimit);
 
         wrist.configure(ConfigWrist, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         eater.configure(ConfigEater, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -88,6 +92,11 @@ public class CoralWrist extends SubsystemBase{
         SmartDashboard.putNumber("[CORALWRIST]: Target:", target);
     }
     
+    
+    public boolean hasPiece(){
+        return beamBreaker.get();
+    }
+
     public double getRawPosition(){
         return wristEncoder.getPosition();
     }
@@ -104,7 +113,7 @@ public class CoralWrist extends SubsystemBase{
         controller.setReference(Units.degreesToRotations(degrees),ControlType.kPosition);
     }
 
-    public void requestEater(double speed){
+    public void wheelSpeed(double speed){
         eater.set(speed);
     }
     public void retract(){

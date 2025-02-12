@@ -11,8 +11,10 @@ import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.WristConstants.Algae;
+import frc.robot.lib.util.BeamSensor;
 
 public class AlgaeWrist extends SubsystemBase{
 
@@ -21,6 +23,7 @@ public class AlgaeWrist extends SubsystemBase{
     private SparkAbsoluteEncoder encoder;
     private SparkBaseConfig configRightWheel, configLeftWheel, configWrist;
     private double Setpoint = 0; //init default (representa el setpoint actual del PID)
+    
 
     public AlgaeWrist(){
 
@@ -29,6 +32,7 @@ public class AlgaeWrist extends SubsystemBase{
         leftWheel = new SparkMax(Algae.CAN_ID_LEFTWHEEL, MotorType.kBrushless);
         wrist = new SparkMax(Algae.CAN_ID_WRIST, MotorType.kBrushless);
 
+        //Declaracion del encoder 
         encoder = wrist.getAbsoluteEncoder();
 
         //Closed loop es lo mismo q pid
@@ -81,13 +85,13 @@ public class AlgaeWrist extends SubsystemBase{
 
     }
 
-    public void extendWrist(){
+    public void retract(){
         //extend the wrist to catch the algae, pone la muñeca en la posición para agarrar la pelota
         Setpoint = Algae.extendSetpoimt;
         wristPID.setReference(Setpoint, ControlType.kPosition);
     }
 
-    public void lookDown(){
+    public void outake(){
         //set the wrist to the 0 position, mirando hacia abajo
         Setpoint = Algae.lookDownSetpoint;
         wristPID.setReference(Setpoint, ControlType.kPosition);

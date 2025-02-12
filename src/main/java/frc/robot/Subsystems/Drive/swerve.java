@@ -40,12 +40,6 @@ import com.studica.frc.AHRS.NavXComType;
 
 public class swerve extends SubsystemBase{
 
-  //for displacement
-  public PIDController yController = new PIDController(
-                    DriveConstants.yGains.getP(),
-                    DriveConstants.yGains.getI(),
-                    DriveConstants.yGains.getD());
-
     //Starts vision:
     private final Vision vision = new Vision();  
   
@@ -95,9 +89,6 @@ public class swerve extends SubsystemBase{
 
     public swerve(){
 
-      //for displacement
-      yController.setTolerance(0.01);
-
       //for pathplanner
       AutoBuilder.configure(this::getPose, this::setPose, this::getChassisSpeeds , this::runVelocity,  new PPHolonomicDriveController(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)), SwerveConfig.ppConfig, () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red, this);
 
@@ -120,20 +111,11 @@ public class swerve extends SubsystemBase{
 
     public void periodic(){
 
-      //for test, remove if success:
-      //SmartDashboard.putNumber("Robot match time", RobotState.getMatchTime());
-
-      SmartDashboard.putNumber("FL ENC", modules[0].getAngle().getDegrees());
-      SmartDashboard.putNumber("FR ENC", modules[1].getAngle().getDegrees());
-      SmartDashboard.putNumber("BL ENC", modules[2].getAngle().getDegrees());
-      SmartDashboard.putNumber("BR ENC", modules[3].getAngle().getDegrees());
-
       RobotState.setAngularVelocity(getYawVelocityRadPerSec());
 
       gyroDisconnection.set(!navX.isConnected());
 
       overAngularLimit.set(RobotState.isAngularVelAboveLimits());
-
 
       odometrypublisher.set(getPose());
       ChassisSpeedpublisher.set(getChassisSpeeds());
@@ -179,19 +161,21 @@ public class swerve extends SubsystemBase{
         Twist2d twist = kinematics.toTwist2d(moduleDeltas);
         rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
+      SmartDashboard.putNumber("NaxX", getAngle());
 
       // Apply odometry update
       poseEstimator.update(rawGyroRotation, modulePositions);
     }
 
     public double getAngle(){
-      return Math.IEEEremainder(-navX.getAngle(), 360);
+      return Math.IEEEremainder(navX.getAngle(), 360);
     }
 
     public double getYawVelocityRadPerSec(){
       return Units.degreesToRadians(-navX.getRawGyroZ());
     }
 
+    
     public Rotation2d getnavXRotation(){
       return Rotation2d.fromDegrees(getAngle());
     }

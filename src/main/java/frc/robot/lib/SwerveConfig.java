@@ -23,13 +23,13 @@ public class SwerveConfig{
     public class measures{
         public static final double WHEELRADIUS = Units.inchesToMeters(2.0);
         public static final double WHEELDIAMETER = Units.inchesToMeters(4.0);
-        public static final double TRACK_WIDTH_X = Units.inchesToMeters(24); 
-        public static final double TRACK_WIDTH_Y = Units.inchesToMeters(24);
+        public static final double TRACK_WIDTH_X = Units.inchesToMeters(29); 
+        public static final double TRACK_WIDTH_Y = Units.inchesToMeters(29);
         public static final double CHASSIS_LENGHT = Units.inchesToMeters(29);
         public static final double BUMPER_LENGHT = CHASSIS_LENGHT + Units.inchesToMeters(2.5);
 
-        public static final double robotMassKg = 68.178; //hay q cambiar
-        public static final double robotMOI = 3.177; //hay q cambiar 
+        public static final double robotMassKg = 45.862; 
+        public static final double robotMOI = 5.134;  
         public static final double wheelCOF = 1.0;
 
         public static final double DRIVE_BASE_RADIUS =
@@ -41,6 +41,15 @@ public class SwerveConfig{
                 new Translation2d(TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0),
                 new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
                 new Translation2d(-TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0)
+            };
+        }
+
+        public static Translation2d[] getTranslationsInverted() {
+            return new Translation2d[] {
+                new Translation2d(-TRACK_WIDTH_X/2.0, -TRACK_WIDTH_Y/2.0),
+                new Translation2d(-TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0),
+                new Translation2d(TRACK_WIDTH_X / 2.0, -TRACK_WIDTH_Y / 2.0),
+                new Translation2d(TRACK_WIDTH_X / 2.0, TRACK_WIDTH_Y / 2.0)
             };
         }
         
@@ -68,6 +77,6 @@ public class SwerveConfig{
               DCMotor.getNEO(1).withReduction(reductions.DriveReduction),
               30,
               1),
-          measures.getTranslations());
+          measures.getTranslationsInverted());
 
 }

@@ -4,10 +4,19 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.ElevatorConstants;
+import frc.robot.Commands.k;
+import frc.robot.Commands.m;
 import frc.robot.Commands.DriveCommands.DriveCommands;
+import frc.robot.Subsystems.Superstructure;
+import frc.robot.Subsystems.Components.Elevator;
 //import frc.robot.Subsystems.Superstructure;
 import frc.robot.Subsystems.Drive.swerve;
 
@@ -17,14 +26,16 @@ public class RobotContainer {
   private SendableChooser<Command> autoChooser = new SendableChooser<>();
 
   private final CommandXboxController controller = new CommandXboxController(0);
-  private final CommandXboxController controller2 = new CommandXboxController(1);
+  private final CommandXboxController c = new CommandXboxController(1);
   private final swerve swerve;
+  private final Elevator e;
   //private final Superstructure superstructure;
   
   public RobotContainer() {
     swerve = new swerve();
+    e = new Elevator();
     //superstructure = new Superstructure();
-
+    
     configureBindings();
   }
 
@@ -41,10 +52,18 @@ public class RobotContainer {
     //start alignment with limelight
     controller.b().whileTrue(DriveCommands.getInRange(swerve, ()-> controller.getLeftX()));
   
+
+    c.leftBumper().whileTrue(new m(e, ()-> c.getLeftY() * -0.2));
+    c.b().whileTrue(new k(e, ElevatorConstants.SETPOINT_FEEDER));
+    c.x().whileTrue(new k(e, ElevatorConstants.SETPOINT_L2));
+    c.y().whileTrue(new k(e, ElevatorConstants.SETPOINT_L3));
+    c.rightBumper().whileTrue(new k(e, ElevatorConstants.SETPOINT_L4));
+    c.a().whileTrue(new k(e, 66));
+    c.start().whileTrue(new InstantCommand(()->{e.resetEncoders();}, e));
   }
 
   public Command getAutonomousCommand() {
-    return autoChooser.getSelected();
+    return new PathPlannerAuto("a");
   }
 
 }

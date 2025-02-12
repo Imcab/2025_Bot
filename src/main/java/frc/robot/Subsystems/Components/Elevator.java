@@ -1,7 +1,3 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.Subsystems.Components;
 
 import com.revrobotics.RelativeEncoder;
@@ -12,51 +8,44 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.lib.tidal.Domain;
+import frc.robot.lib.util.Gains;
+import frc.robot.lib.ClosedLoopControl;
+import frc.robot.lib.ClosedLoopControl.ClosedLoopRequest;
 
-public class Elevator extends SubsystemBase{
+public class Elevator extends SubsystemBase {
 
   private final SparkMax leader, follower;
   private final SparkMaxConfig leaderConfig, followerConfig;
   private final RelativeEncoder leaderEncoder, followerEncoder;
-  private double currentSetpoint = 0; //init current setpoint
 
-  public enum ELEVATOR_LEVELS{
-    k1,k2,k3
+  public enum ELEVATOR_LEVELS {
+    k1, k2, k3
   }
 
-  ELEVATOR_LEVELS tracker = ELEVATOR_LEVELS.k1;
+  private ELEVATOR_LEVELS tracker = ELEVATOR_LEVELS.k1;
 
-  PIDController k1Controller;
-  PIDController k2Controller;
-  PIDController k3Controller;
+  // Use a single ClosedLoopControl instance
+  private final ClosedLoopControl elevatorPID;
 
-  public Elevator(){
+  private ClosedLoopRequest heightRequest;
 
-    k1Controller = new PIDController(
-    ElevatorConstants.k1_GAINS.getP(),
-    ElevatorConstants.k1_GAINS.getI(),
-    ElevatorConstants.k1_GAINS.getD());
+  private Domain cero_To_L2 = new Domain(ElevatorConstants.SETPOINT_RETRACT, ElevatorConstants.SETPOINT_L2);
+  private Domain L2_to_L3 = new Domain(ElevatorConstants.SETPOINT_L2, ElevatorConstants.SETPOINT_L3);
+  private Domain l3_to_L4 = new Domain(ElevatorConstants.SETPOINT_L3, ElevatorConstants.SETPOINT_L4);
 
+  public Elevator() {
+    // Initialize ClosedLoopControl with default gains
+    elevatorPID = new ClosedLoopControl(ElevatorConstants.k1_GAINS, ClosedLoopControl.OutputType.kPositive);
 
-    k2Controller = new PIDController(
-    ElevatorConstants.k2_GAINS.getP(),
-    ElevatorConstants.k2_GAINS.getI(),
-    ElevatorConstants.k2_GAINS.getD());
+    heightRequest = elevatorPID.new ClosedLoopRequest();
 
-    k3Controller = new PIDController(
-    ElevatorConstants.k3_GAINS.getP(),
-    ElevatorConstants.k3_GAINS.getI(),
-    ElevatorConstants.k3_GAINS.getD());
-
-    //Set for all PIDS an error tolerance of 1.5 cm
-    k1Controller.setTolerance(ElevatorConstants.ERROR_TOLERANCE);
-    k2Controller.setTolerance(ElevatorConstants.ERROR_TOLERANCE);
-    k3Controller.setTolerance(ElevatorConstants.ERROR_TOLERANCE);
+    //Sets a tolerance and starts the tuner
+    elevatorPID.setTolerance(ElevatorConstants.ERROR_TOLERANCE); 
+    elevatorPID.initTuning("ElevatorTuner");
 
     leaderConfig = new SparkMaxConfig();
     followerConfig = new SparkMaxConfig();
@@ -68,127 +57,104 @@ public class Elevator extends SubsystemBase{
     followerEncoder = follower.getEncoder();
 
     resetEncoders();
-
     burnFlash();
-
   }
 
-  public void resetEncoders(){
+  public void resetEncoders() {
     leaderEncoder.setPosition(0);
     followerEncoder.setPosition(0);
   }
 
-  private void burnFlash(){
-
+  private void burnFlash() {
     leader.setCANTimeout(250);
-
-    leaderConfig.idleMode(IdleMode.kCoast).
-    inverted(ElevatorConstants.leaderInverted);
-    
+    leaderConfig.idleMode(IdleMode.kCoast).inverted(ElevatorConstants.leaderInverted);
     leader.configure(leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
     leader.setCANTimeout(0);
 
     follower.setCANTimeout(250);
-
-    followerConfig.idleMode(IdleMode.kCoast).
-    follow(ElevatorConstants.CAN_ID_LEADER, ElevatorConstants.slaveInverted);
- 
+    followerConfig.idleMode(IdleMode.kCoast).follow(ElevatorConstants.CAN_ID_LEADER, ElevatorConstants.slaveInverted);
     follower.configure(followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
     follower.setCANTimeout(0);
-
   }
 
   @Override
-  public void periodic(){
+  public void periodic() {
 
-    SmartDashboard.putNumber("Leader pos", getLeaderPosition());
-    SmartDashboard.putNumber("Slave pos", getFollowerPosition());
-    SmartDashboard.putNumber("Average pos", getAveragePosition());
+    //Starts the graph and the tuner
+    elevatorPID.graph("ElevatorPID");
 
-    SmartDashboard.putNumber("PIDOutput", leader.getAppliedOutput());
-    SmartDashboard.putNumber("PIDNumber", getSetpoint());
+    elevatorPID.tuneWithInterface();
 
-    Domain retract2 = new Domain(ElevatorConstants.SETPOINT_RETRACT, ElevatorConstants.SETPOINT_L2);
-    Domain retactl3 = new Domain(ElevatorConstants.SETPOINT_L2, ElevatorConstants.SETPOINT_L3);
-    Domain retactl4 = new Domain(ElevatorConstants.SETPOINT_L3, ElevatorConstants.SETPOINT_L4);
-
-    if (retract2.inRange(getLeaderPosition())) {
+    //Define ranges for different PID gains   
+    if (cero_To_L2.inRange(getCentimeters())) {
+        updateGains(ElevatorConstants.k1_GAINS);
         tracker = ELEVATOR_LEVELS.k1;
     }
 
-    if (retactl3.inRange(getLeaderPosition())) {
+    if (L2_to_L3.inRange(getCentimeters())) {
+        updateGains(ElevatorConstants.k2_GAINS);
         tracker = ELEVATOR_LEVELS.k2;
     }
 
-    if (retactl4.inRange(getLeaderPosition())) {
+    if (l3_to_L4.inRange(getCentimeters())) {
+        updateGains(ElevatorConstants.k3_GAINS);
         tracker = ELEVATOR_LEVELS.k3;
     }
 
-    SmartDashboard.putString("PIDLevels", tracker.toString());
+    //Print the current Level
+    SmartDashboard.putString("ElevatorLevel", tracker.toString());
 
+    SmartDashboard.putNumber("CENT", getCentimeters());
   }
 
-  public double getLeaderPosition(){
-    return leaderEncoder.getPosition() * ElevatorConstants.CONVERSION_FACTOR + ElevatorConstants.ELEVATOR_OFFSET;
-  }
-  public double getFollowerPosition(){
-    return followerEncoder.getPosition() * ElevatorConstants.CONVERSION_FACTOR + ElevatorConstants.ELEVATOR_OFFSET;
-  }
-
-  public double getAveragePosition(){
-    double avg = (getLeaderPosition() + getFollowerPosition()) / 2;
-    return avg;
-  }
-
-  public double getSetpoint(){
-    return currentSetpoint;
-  }
-
-  public void runSpeed(double speed){
-    leader.set(speed);
-  }
-  public void runRequest(double height){
-    currentSetpoint = height;
-
-    //Run for different PID control
-    switch (tracker) {
-        case k1:
-        leader.set(k1Controller.calculate(getLeaderPosition(), height));
-            break;
-        case k2:
-        leader.set(k2Controller.calculate(getLeaderPosition(), height));
-            break;
-
-        case k3:
-        leader.set(k3Controller.calculate(getLeaderPosition(), height));
-            break;
-        default:
-            break;
+  private void updateGains(Gains newGains) {
+    if (!elevatorPID.currentGains().equals(newGains)) { 
+        elevatorPID.setGains(newGains);
     }
   }
-  public void retract(){
-    runRequest(ElevatorConstants.SETPOINT_RETRACT);
-  }
-  public void toL2(){
-    runRequest(ElevatorConstants.SETPOINT_L2);
-  }
-  public void toL3(){
-    runRequest(ElevatorConstants.SETPOINT_L3);
-  }
-  public void toL4(){
-    runRequest(ElevatorConstants.SETPOINT_L4);
-  }
-  public void toFeeder(){
-    runRequest(ElevatorConstants.SETPOINT_FEEDER);
-  }
-  public boolean atGoal(){
-    return Math.abs(getLeaderPosition() - currentSetpoint) <= ElevatorConstants.ERROR_TOLERANCE;
+
+  public double getCentimeters() {
+    return leaderEncoder.getPosition() * (ElevatorConstants.CONVERSION_FACTOR / 3) + ElevatorConstants.ELEVATOR_OFFSET;
   }
 
-  public void stop(){
+  public double getSetpoint() {
+    return elevatorPID.getSetpoint();
+  }
+
+  public void runSpeed(double speed) {
+    leader.set(speed);
+  }
+
+  public void runRequest(double height) {
+    //Runs a PID height Request
+    leader.set(elevatorPID.runRequest(heightRequest.withReference(getCentimeters()).toSetpoint(height)));
+  }
+
+  public void retract() {
+    runRequest(ElevatorConstants.SETPOINT_RETRACT);
+  }
+
+  public void toL2() {
+    runRequest(ElevatorConstants.SETPOINT_L2);
+  }
+
+  public void toL3() {
+    runRequest(ElevatorConstants.SETPOINT_L3);
+  }
+
+  public void toL4() {
+    runRequest(ElevatorConstants.SETPOINT_L4);
+  }
+
+  public void toFeeder() {
+    runRequest(ElevatorConstants.SETPOINT_FEEDER);
+  }
+
+  public boolean atGoal() {
+    return elevatorPID.atGoal();
+  }
+
+  public void stop() {
     leader.stopMotor();
   }
-  
 }
