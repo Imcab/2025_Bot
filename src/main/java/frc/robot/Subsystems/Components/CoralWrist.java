@@ -18,6 +18,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.WristConstants.Coral;
+import frc.robot.lib.ClosedLoopControl;
+import frc.robot.lib.ClosedLoopControl.ClosedLoopRequest;
+import frc.robot.lib.ClosedLoopControl.OutputType; 
 import frc.robot.lib.util.BeamSensor;
 
 public class CoralWrist extends SubsystemBase{
@@ -26,18 +29,24 @@ public class CoralWrist extends SubsystemBase{
     private RelativeEncoder wristEncoder;
     private SparkMax eater;
 
-    private SparkClosedLoopController controller;
-
     private SparkMaxConfig ConfigWrist , ConfigEater;
 
     private boolean atGoal;
 
     private double target;
 
-    private BeamSensor beamBreaker = new BeamSensor(Coral.DIO_PORT_SENSOR); 
+    //private BeamSensor beamBreaker = new BeamSensor(Coral.DIO_PORT_SENSOR); 
+
+    private ClosedLoopControl pid;
+
+    private ClosedLoopRequest request = pid.new ClosedLoopRequest();
 
     //Declaracion de 
     public CoralWrist(){
+
+        pid  = new ClosedLoopControl(Coral.Gains, OutputType.kPositive);
+
+        pid.initTuning("WristTune");
 
         atGoal = false;
 
@@ -45,12 +54,14 @@ public class CoralWrist extends SubsystemBase{
 
         wristEncoder = wrist.getEncoder();
 
-        controller = wrist.getClosedLoopController();
-
         eater = new SparkMax(Coral.CAN_ID_EATER, MotorType.kBrushless);
 
         ConfigWrist = new SparkMaxConfig();
         ConfigEater = new SparkMaxConfig();
+
+        request.enableOutputClamp(true);
+
+        request.withClamp(-1, 1);
 
         Burnflash();
 
@@ -65,12 +76,7 @@ public class CoralWrist extends SubsystemBase{
         ConfigWrist.
             inverted(Coral.wristMotorInverted).
             idleMode(IdleMode.kBrake).
-            smartCurrentLimit(Coral.wristCurrentLimit).
-        closedLoop.
-            p(Coral.Gains.getP()).
-            i(Coral.Gains.getI()).
-            d(Coral.Gains.getD()).
-            feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+            smartCurrentLimit(Coral.wristCurrentLimit);
         //Config eater
         ConfigEater.
             inverted(Coral.wheelInverted).
@@ -86,6 +92,8 @@ public class CoralWrist extends SubsystemBase{
 
     @Override
     public void periodic(){
+        pid.graph("CoralWrist");
+        pid.tuneWithInterface();
         SmartDashboard.putNumber("[CORALWRIST]: Position:", getPosition());
         SmartDashboard.putNumber("[CORALWRIST]: RawPosition:", getRawPosition());
         SmartDashboard.putBoolean("[CORALWRIST]: AtGoal:"  , atGoal);
@@ -94,7 +102,8 @@ public class CoralWrist extends SubsystemBase{
     
     
     public boolean hasPiece(){
-        return beamBreaker.get();
+        //return beamBreaker.get();
+        return false;
     }
 
     public double getRawPosition(){
@@ -110,7 +119,7 @@ public class CoralWrist extends SubsystemBase{
 
     public void requestPosition(double degrees){
         this.target = degrees;
-        controller.setReference(Units.degreesToRotations(degrees),ControlType.kPosition);
+        pid.runRequest(request.withReference(getPosition()).toSetpoint(Units.degreesToRotations(degrees)));
     }
 
     public void wheelSpeed(double speed){
